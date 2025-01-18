@@ -61,14 +61,14 @@ const routes = [
     route: "/categories",
     component: <Categories />,
   },
-  {
-    type: "collapse",
-    name: "Departments",
-    key: "departments",
-    icon: <StyleIcon sx={{ fontSize: "30px !important" }} />,
-    route: "/departments",
-    component: <Departments />,
-  },
+  // {
+  //   type: "collapse",
+  //   name: "Departments",
+  //   key: "departments",
+  //   icon: <StyleIcon sx={{ fontSize: "30px !important" }} />,
+  //   route: "/departments",
+  //   component: <Departments />,
+  // },
   {
     type: "collapse",
     name: "Events",
@@ -82,7 +82,7 @@ const routes = [
     name: "Add Events",
     key: "addevents",
     icon: <EmojiEventsIcon sx={{ fontSize: "30px !important" }} />,
-    route: "/addevents",
+    route: "/addevents/:eventId?",
     component: <Addevents />,
   },
   {

@@ -23,7 +23,7 @@ import api from "../api";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
-  const [rowsPerPage, setRowsPerPage] = useState(10); // Default rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(15); // Default rows per page
   const [page, setPage] = useState(0);
   const navigate = useNavigate();
 
@@ -121,7 +121,14 @@ const Events = () => {
                       <td style={tableCellStyle}>{event.location}</td>
                       <td style={tableCellStyle}>{event.noOfTickets}</td>
                       <td style={tableCellStyle}>
-                        <MDButton style={{ marginRight: "10px" }} variant="gradient" color="info">
+                        <MDButton
+                          style={{ marginRight: "10px" }}
+                          variant="gradient"
+                          color="info"
+                          onClick={() =>
+                            navigate("/addevents", { state: { eventId: event.eventId } })
+                          }
+                        >
                           <CreateIcon />
                         </MDButton>
                       </td>

@@ -31,6 +31,7 @@ import "../styles.css"; // Import the CSS file
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import { EventRepeat } from "@mui/icons-material";
+
 // Extend dayjs with required plugins
 dayjs.extend(customParseFormat);
 dayjs.extend(localizedFormat);
@@ -44,14 +45,60 @@ function EventRegistration() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const handleOpenDialog = (flight = null) => {
-    setIsDialogOpen(true);
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [events, setEvents] = useState([]);
+  const [totalBookings, setTotalBookings] = useState(0); // Added to track total bookings
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get(
+          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=10&offset=0"
+        );
+        console.log("Full API Response:", response.data);
+
+        const eventData = response.data.data;
+        if (Array.isArray(eventData)) {
+          setEvents(eventData);
+          console.log("Events State after setting:", eventData);
+        } else {
+          console.error("Data format is not an array:", eventData);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const handleSelectChange = (event) => {
+    setSelectedEventId(event.target.value);
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
+  const fetchBookings = async () => {
+    if (!selectedEventId) return;
+    setLoading(true);
+    try {
+      const response = await api.get(
+        `/bookings?eventId=${selectedEventId}&search=${searchQuery}&sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${
+          page * rowsPerPage
+        }`
+      );
+      setRows(response.data.data);
+      setTotalBookings(response.data.total); // Assuming API returns total bookings
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      setLoading(false);
+    }
   };
-  const navigate = useNavigate();
+
+  const handleSearch = debounce(() => {
+    setPage(0); // Reset to the first page
+    fetchBookings();
+  }, 300); // Debounce search requests
 
   return (
     <DashboardLayout>
@@ -82,16 +129,32 @@ function EventRegistration() {
                     <Grid container spacing={2}>
                       <b style={{ lineHeight: "60px", marginLeft: "10px" }}>Search by</b>
                       <Grid item xs={12} sm={2}>
-                        <TextField
-                          style={{ marginTop: "0px" }}
-                          name="user"
-                          label="User info"
+                        <Select
                           fullWidth
-                          margin="normal"
-                        />
+                          displayEmpty
+                          variant="outlined"
+                          value={selectedEventId}
+                          onChange={handleSelectChange}
+                          style={{
+                            border: "1px solid #ccc",
+                            lineHeight: "40px",
+                            boxShadow: "none",
+                          }}
+                          defaultValue=""
+                        >
+                          <MenuItem value="">
+                            <em>Select an Event</em>
+                          </MenuItem>
+                          {events.map((event) => (
+                            <MenuItem key={event.eventId} value={event.eventId}>
+                              {event.title}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </Grid>
-                      <Grid item xs={12} sm={2}>
-                        <MDButton variant="gradient" color="info" fullWidth>
+
+                      <Grid item xs={12} sm={1}>
+                        <MDButton variant="gradient" color="info" fullWidth onClick={handleSearch}>
                           Search
                         </MDButton>
                       </Grid>
@@ -100,28 +163,12 @@ function EventRegistration() {
                 </Card>
                 <MDBox mt={3}>
                   <>
-                    <>
-                      <MDBox mt={2} mb={2}>
-                        <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
-                          <Select
-                            labelId="rows-per-page-label"
-                            value={rowsPerPage}
-                            label="Rows per page"
-                            style={{ height: "36px", fontSize: "16px" }}
-                          >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </MDBox>
-                      <MDBox mt={2} display="flex" justifyContent="center">
-                        <TableContainer
-                          component={Paper}
-                          style={{ borderRadius: "0px", boxShadow: "none" }}
-                        >
+                    <MDBox mt={2} display="flex" justifyContent="center">
+                      <TableContainer
+                        component={Paper}
+                        style={{ borderRadius: "0px", boxShadow: "none" }}
+                      >
+                        {rows?.length > 0 ? (
                           <table
                             style={{
                               width: "100%",
@@ -150,197 +197,72 @@ function EventRegistration() {
                                   Payment Date
                                 </th>
                                 <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Payment Amout
+                                  Payment Amount
                                 </th>
                                 <th style={{ border: "1px solid #ddd", padding: "8px" }}>
                                   Transaction Id
                                 </th>
                               </tr>
                             </thead>
-                            <tbody style={{ fontSize: "15px" }}>
-                              <tr>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>#11</td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Veerraju Pippalla
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  9949220002
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  pvrveeru@gmail.com
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  NewYear Event
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  20-12-2024
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Hyderabad
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  31-11-2024
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>999/-</td>
-                                <td
-                                  style={{ border: "1px solid #ddd", padding: "8px" }}
-                                  onClick={() => handleOpenDialog()}
-                                >
-                                  Tliv#23445667
-                                </td>
-                              </tr>
+                            <tbody>
+                              {rows.map((row) => (
+                                <tr key={row.bookingId}>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.bookingId}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.contactPersonFirstName} {row.contactPersonLastName}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.contactPersonPhone}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.contactPersonEmail}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.event.title}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.event.eventDate}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.event.location}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.bookingDate}
+                                  </td>
+                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    {row.paymentStatus}
+                                  </td>
+                                  <td
+                                    style={{
+                                      border: "1px solid #ddd",
+                                      padding: "8px",
+                                      cursor: "pointer",
+                                      color: "blue",
+                                    }}
+                                    onClick={() => handleOpenDialog(row)}
+                                  >
+                                    {row.transactionId}
+                                  </td>
+                                </tr>
+                              ))}
                             </tbody>
                           </table>
-                        </TableContainer>
-                        <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
-                          <DialogTitle
-                            style={{
-                              maxWidth: "500px", // Restricts maximum size
-                              width: "500px", // Allows full width within the grid system
-                            }}
-                          >
-                            Event Ticket Invoice
-                          </DialogTitle>
-                          <DialogContent>
-                            <div style={{ maxWidth: "500px", fontSize: "14px", lineHeight: "1.5" }}>
-                              <table
-                                style={{
-                                  width: "100%",
-                                  borderCollapse: "collapse",
-                                  fontSize: "14px",
-                                  marginBottom: "20px",
-                                }}
-                              >
-                                <tbody>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Event Name
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      New Year Event
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Event Date
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      20-12-2024
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Event Location
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Hyderabad
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Payment Date
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      31-11-2024
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Payment Amount
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      ₹999
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Tax
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      ₹50
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Type of Payment
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Credit Card
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td
-                                      style={{
-                                        border: "1px solid #ddd",
-                                        padding: "8px",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      Transaction Id
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Tliv#23445667
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              <div style={{ textAlign: "center", fontSize: "12px" }}>
-                                <strong>Note:</strong> Please keep this invoice for your records.
-                              </div>
-                            </div>
-                          </DialogContent>
-
-                          <DialogActions>
-                            <Button onClick={handleCloseDialog}>Close</Button>
-                          </DialogActions>
-                        </Dialog>
-                      </MDBox>
-                      <MDBox mt={2} mb={2} display="flex" justifyContent="center">
-                        <Pagination count={Math.ceil(rows.length / rowsPerPage)} page={page + 1} />
-                      </MDBox>
-                    </>
+                        ) : (
+                          <p style={{ textAlign: "center", margin: "20px 0" }}>
+                            No Event Registration data available
+                          </p>
+                        )}
+                      </TableContainer>
+                    </MDBox>
+                    <MDBox mt={2} mb={2} display="flex" justifyContent="center">
+                      <Pagination
+                        count={Math.ceil(totalBookings / rowsPerPage)} // Updated pagination logic
+                        page={page + 1}
+                        onChange={(_, value) => setPage(value - 1)} // Set page properly
+                      />
+                    </MDBox>
                   </>
                 </MDBox>
               </MDBox>

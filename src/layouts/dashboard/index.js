@@ -11,23 +11,13 @@ import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import MDButton from "components/MDButton";
-import { format } from "date-fns"; // Import date-fns
 import api from "../api";
 import "../styles.css"; // Import the CSS file
-import ChatWindow from "./chatwindow";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -45,150 +35,118 @@ function Dashboard() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [encodedFlightNumber, setEncodedFlightNumber] = useState(""); // New state for encoded flight number
+  const [isEventIdDisabled, setIsEventIdDisabled] = useState(false);
+  const [isDateDisabled, setIsDateDisabled] = useState(false);
+  const [tableData, setTableData] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [events, setEvents] = useState([]);
 
-  const [time, setTime] = useState(Date.now());
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleStartDateChange = (newDate) => {
-    setStartDate(newDate);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage - 1);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-  const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) {
-      setError("Please provide flight number.");
-      return;
-    }
-
-    const token = localStorage.getItem("userToken");
-    if (!token) {
-      setError("User not authenticated. Please log in.");
-      navigate("/authentication/sign-in/");
-      return;
-    }
-
-    const formattedFlightNumber = searchQuery.trim().replace(/\s+/g, " ");
-    const encodedFlightNumber = encodeURIComponent(formattedFlightNumber);
-    const url = `Report/NUCPassengerClearedReport?flightNumber=${encodedFlightNumber}`;
-    setEncodedFlightNumber(encodedFlightNumber);
-
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await api.get(url, {
-        headers: {
-          Accept: "*/*",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        const { flightNumber, origin, destination, departureDate, arrivalDate, passengerCleared } =
-          response.data;
-
-        setRdata({
-          flightNumber,
-          origin,
-          destination,
-          etd: new Date(departureDate).toLocaleString(),
-          eta: new Date(arrivalDate).toLocaleString(),
-          clearedCount: passengerCleared.length,
-          notClearedCount: 0, // Set this to an appropriate value if available
-        });
-
-        setRows(passengerCleared || []);
-      } else {
-        setError("Failed to fetch reports. Please try again.");
-      }
-    } catch (error) {
-      console.log("Error caught in catch block:", error);
-
-      if (error.response) {
-        console.error("Error Response:", error.response.data);
-        if (error.response.status === 401) {
-          setError("Unauthorized access. Please log in again.");
-          navigate("/authentication/sign-in/");
-          navigate("/login"); // Navigate to login if unauthorized
-        } else if (error.response.status === 400) {
-          setError("Bad request. Please check your inputs.");
-        } else if (error.response.status === 420) {
-          setError("No Data For Flight Entered");
-        } else {
-          setError("An error occurred while fetching reports.");
-        }
-      } else if (error.request) {
-        console.error("Error Request:", error.request);
-        setError("No response from the server. Please try again later.");
-      } else {
-        console.error("Error:", error.message);
-        setError("An unexpected error occurred. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, navigate]);
+  const [summaryData, setSummaryData] = useState({
+    totalBookings: 0,
+    users: 0,
+    totalRevenue: 0,
+  });
 
   useEffect(() => {
-    handleSearch();
-    const intervalId = setInterval(() => {
-      handleSearch(); // Call periodically
-    }, 8000);
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get(
+          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=10&offset=0"
+        );
+        console.log("Full API Response:", response.data);
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [handleSearch]);
+        const eventData = response.data.data;
+        if (Array.isArray(eventData)) {
+          setEvents(eventData);
+          console.log("Events State after setting:", eventData);
+        } else {
+          console.error("Data format is not an array:", eventData);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
 
-  const convertToCSV = (data) => {
-    if (!data.length) return ""; // Return empty string if data is empty
+    fetchEvents();
+    setIsDateDisabled(false);
+    setStartDate();
+    setEndDate();
+  }, []);
 
-    const header = [
-      "ID Card Type",
-      "ID Number",
-      "Nationality",
-      "Surname",
-      "First Name",
-      "Middle Name",
-      "DOB",
-      "Gender",
-      "Flight Type",
-      "Passenger Type",
-      "Purpose Of Visit",
-    ].join(",");
-    const rows = data
-      .map((row) =>
-        [
-          row.idCardType,
-          row.idNumber,
-          row.nationality,
-          row.surName,
-          row.firstName,
-          row.middleName || "", // Handle null values
-          row.dob,
-          row.gender,
-          row.flightType,
-          row.passengerType,
-          row.purposeOfVisit,
-        ].join(",")
-      )
-      .join("\n");
-    return `${header}\n${rows}`;
+  const handleSelectChange = (event) => {
+    setSelectedEventId(event.target.value);
+    if (event.target.value) {
+      setIsDateDisabled(true);
+      setStartDate(null);
+      setEndDate(null);
+    } else {
+      setIsDateDisabled(false);
+    }
   };
 
-  const exportCSV = () => {
-    const csv = convertToCSV(rows);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "Dashboard.csv");
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    if (date) {
+      setIsEventIdDisabled(true);
+      setSelectedEventId("");
+    } else {
+      setIsEventIdDisabled(false);
+    }
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    if (date) {
+      setIsEventIdDisabled(true);
+      setSelectedEventId("");
+    } else {
+      setIsEventIdDisabled(false);
+    }
+  };
+
+  // Handle search button click
+  const handleSearch = async () => {
+    if (selectedEventId) {
+      try {
+        const response = await api.get(
+          `/admin/getSummaryData?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
+        );
+        if (response.data && response.data.data) {
+          setSummaryData(response.data.data);
+        } else {
+          console.error("Unexpected response structure:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching reports by Event ID:", error);
+      }
+    } else if (startDate && endDate) {
+      const formattedStartDate = startDate.format("YYYY-MM-DD");
+      const formattedEndDate = endDate.format("YYYY-MM-DD");
+      try {
+        const response = await api.get(
+          `/admin/getSummaryData?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
+        );
+        if (response.data && response.data.data) {
+          setSummaryData(response.data.data);
+        } else {
+          console.error("Unexpected response structure:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching reports by Date Range:", error);
+      }
+    } else {
+      console.error("Please select either an event or a date range.");
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSelectedEventId(""); // Reset the selected event
+    setStartDate(null); // Clear the start date
+    setEndDate(null); // Clear the end date
+    setTableData([]); // Clear the table data (optional, if you want to clear the results)
+    setIsEventIdDisabled();
+    setEndDate();
+    setStartDate();
   };
 
   return (
@@ -221,19 +179,26 @@ function Dashboard() {
                     <Grid item xs={12} sm={2}>
                       <Select
                         fullWidth
-                        value={searchQuery}
-                        onChange={handleSearchChange}
                         displayEmpty
                         variant="outlined"
+                        value={selectedEventId}
+                        onChange={handleSelectChange}
+                        disabled={isEventIdDisabled}
                         style={{
                           border: "1px solid #ccc",
                           lineHeight: "40px",
                           boxShadow: "none",
                         }}
+                        defaultValue=""
                       >
                         <MenuItem value="">
-                          <em>Select Event</em>
+                          <em>Select an Event</em>
                         </MenuItem>
+                        {events.map((event) => (
+                          <MenuItem key={event.eventId} value={event.eventId}>
+                            {event.title}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </Grid>
                     <Grid item xs={12} sm={2}>
@@ -243,12 +208,38 @@ function Dashboard() {
                           value={startDate}
                           onChange={handleStartDateChange}
                           renderInput={(params) => <TextField fullWidth {...params} />}
+                          disabled={isDateDisabled}
                         />
                       </LocalizationProvider>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <MDButton variant="gradient" color="info" fullWidth onClick={handleSearch}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          label="End Date"
+                          value={endDate}
+                          onChange={handleEndDateChange}
+                          renderInput={(params) => <TextField fullWidth {...params} />}
+                          disabled={isDateDisabled}
+                        />
+                      </LocalizationProvider>
+                    </Grid>
+                    <Grid item xs={12} sm={1} style={{ display: "flex" }}>
+                      <MDButton
+                        variant="gradient"
+                        color="info"
+                        fullWidth
+                        onClick={handleSearch}
+                        style={{ marginRight: "10px" }}
+                      >
                         Search
+                      </MDButton>
+                      <MDButton
+                        variant="gradient"
+                        color="info"
+                        fullWidth
+                        onClick={handleClearSearch}
+                      >
+                        Clear
                       </MDButton>
                     </Grid>
                   </Grid>
@@ -265,11 +256,11 @@ function Dashboard() {
                   color="dark"
                   icon="weekend"
                   title="Bookings"
-                  count={281}
+                  count={summaryData.totalBookings}
                   percentage={{
                     color: "success",
-                    amount: "+55%",
-                    label: "than lask week",
+                    amount: "+55%", // Adjust as needed or calculate dynamically
+                    label: "than last week",
                   }}
                 />
               </MDBox>
@@ -279,10 +270,10 @@ function Dashboard() {
                 <ComplexStatisticsCard
                   icon="leaderboard"
                   title="Today's Users"
-                  count="2,300"
+                  count={summaryData.users}
                   percentage={{
                     color: "success",
-                    amount: "+3%",
+                    amount: "+3%", // Adjust as needed or calculate dynamically
                     label: "than last month",
                   }}
                 />
@@ -294,10 +285,10 @@ function Dashboard() {
                   color="success"
                   icon="store"
                   title="Revenue"
-                  count="34k"
+                  count={`$${summaryData.totalRevenue}`}
                   percentage={{
                     color: "success",
-                    amount: "+1%",
+                    amount: "+1%", // Adjust as needed or calculate dynamically
                     label: "than yesterday",
                   }}
                 />

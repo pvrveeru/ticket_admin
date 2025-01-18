@@ -42,8 +42,113 @@ function FinanceReports() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [endDate, setEndDate] = useState(dayjs()); // Current date
+  const [events, setEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState("");
   const navigate = useNavigate();
+
+  const [isEventIdDisabled, setIsEventIdDisabled] = useState(false);
+  const [isDateDisabled, setIsDateDisabled] = useState(false);
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get(
+          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=10&offset=0"
+        );
+        console.log("Full API Response:", response.data);
+
+        const eventData = response.data.data;
+        if (Array.isArray(eventData)) {
+          setEvents(eventData);
+          console.log("Events State after setting:", eventData);
+        } else {
+          console.error("Data format is not an array:", eventData);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+    setIsDateDisabled(false);
+    setStartDate();
+    setEndDate();
+  }, []);
+
+  const handleSelectChange = (event) => {
+    setSelectedEventId(event.target.value);
+    if (event.target.value) {
+      setIsDateDisabled(true);
+      setStartDate(null);
+      setEndDate(null);
+    } else {
+      setIsDateDisabled(false);
+    }
+  };
+
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    if (date) {
+      setIsEventIdDisabled(true);
+      setSelectedEventId("");
+    } else {
+      setIsEventIdDisabled(false);
+    }
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    if (date) {
+      setIsEventIdDisabled(true);
+      setSelectedEventId("");
+    } else {
+      setIsEventIdDisabled(false);
+    }
+  };
+
+  // Handle search button click
+  const handleSearch = async () => {
+    if (selectedEventId) {
+      // Search by event ID
+      try {
+        const response = await api.get(
+          `/payment-details/financeReports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
+        );
+        console.log("Search by Event ID Response:", response.data);
+        setTableData(response.data.data); // Update table data
+      } catch (error) {
+        console.error("Error fetching reports by Event ID:", error);
+      }
+    } else if (startDate && endDate) {
+      // Search by date range
+      const formattedStartDate = startDate.format("YYYY-MM-DD");
+      const formattedEndDate = endDate.format("YYYY-MM-DD");
+
+      try {
+        const response = await api.get(
+          `/payment-details/financeReports?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
+        );
+        console.log("Search by Date Range Response:", response.data);
+        setTableData(response.data.data); // Update table data
+      } catch (error) {
+        console.error("Error fetching reports by Date Range:", error);
+      }
+    } else {
+      console.error("Please select either an event or a date range.");
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSelectedEventId(""); // Reset the selected event
+    setStartDate(null); // Clear the start date
+    setEndDate(null); // Clear the end date
+    setTableData([]); // Clear the table data (optional, if you want to clear the results)
+    setIsEventIdDisabled();
+    setEndDate();
+    setStartDate();
+  };
 
   return (
     <DashboardLayout>
@@ -78,15 +183,24 @@ function FinanceReports() {
                           fullWidth
                           displayEmpty
                           variant="outlined"
+                          value={selectedEventId}
+                          onChange={handleSelectChange}
+                          disabled={isEventIdDisabled}
                           style={{
                             border: "1px solid #ccc",
                             lineHeight: "40px",
                             boxShadow: "none",
                           }}
+                          defaultValue=""
                         >
                           <MenuItem value="">
-                            <em>Select Event</em>
+                            <em>Select an Event</em>
                           </MenuItem>
+                          {events.map((event) => (
+                            <MenuItem key={event.eventId} value={event.eventId}>
+                              {event.title}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </Grid>
                       <Grid item xs={12} sm={2}>
@@ -94,13 +208,40 @@ function FinanceReports() {
                           <DatePicker
                             label="Start Date"
                             value={startDate}
+                            onChange={handleStartDateChange}
                             renderInput={(params) => <TextField fullWidth {...params} />}
+                            disabled={isDateDisabled}
                           />
                         </LocalizationProvider>
                       </Grid>
                       <Grid item xs={12} sm={2}>
-                        <MDButton variant="gradient" color="info" fullWidth>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DatePicker
+                            label="End Date"
+                            value={endDate}
+                            onChange={handleEndDateChange}
+                            renderInput={(params) => <TextField fullWidth {...params} />}
+                            disabled={isDateDisabled}
+                          />
+                        </LocalizationProvider>
+                      </Grid>
+                      <Grid item xs={12} sm={1} style={{ display: "flex" }}>
+                        <MDButton
+                          variant="gradient"
+                          color="info"
+                          fullWidth
+                          onClick={handleSearch}
+                          style={{ marginRight: "10px" }}
+                        >
                           Search
+                        </MDButton>
+                        <MDButton
+                          variant="gradient"
+                          color="info"
+                          fullWidth
+                          onClick={handleClearSearch}
+                        >
+                          Clear
                         </MDButton>
                       </Grid>
                     </Grid>
@@ -130,62 +271,66 @@ function FinanceReports() {
                           component={Paper}
                           style={{ borderRadius: "0px", boxShadow: "none" }}
                         >
-                          <table
-                            style={{
-                              width: "100%",
-                              borderCollapse: "collapse",
-                              fontSize: "16px",
-                            }}
-                          >
-                            <thead style={{ background: "#efefef", fontSize: "14px" }}>
-                              <tr>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event ID
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Name
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Date
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Tickets
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Enrolments
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Payments
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Transaction Date
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Transaction Id
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody style={{ fontSize: "15px" }}>
-                              <tr>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>#11</td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Newyear Event
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  31-12-2024
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>100</td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>50</td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>50000</td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  20-12-2024
-                                </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  #avbc132124
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
+                          {tableData?.length > 0 ? (
+                            <table
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                                fontSize: "16px",
+                              }}
+                            >
+                              <thead style={{ background: "#efefef", fontSize: "14px" }}>
+                                <tr>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event ID
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Name
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Date
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Tickets
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Enrolments
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Payments
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody style={{ fontSize: "15px" }}>
+                                {tableData.map((event) => (
+                                  <tr key={event.eventId}>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.eventId}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.title}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {new Date(event.eventDate).toLocaleDateString()}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.noOfTickets}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.eventEnrollments}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.eventPayments}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <p style={{ textAlign: "center", margin: "20px 0" }}>
+                              No finance data available
+                            </p>
+                          )}
                         </TableContainer>
                       </MDBox>
                       <MDBox mt={2} mb={2} display="flex" justifyContent="center">

@@ -9,45 +9,50 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import axios from "axios";
 import "../styles.css"; // Custom styles
-import { LineWeight } from "@mui/icons-material";
 import api from "../api";
+import { useParams } from "react-router-dom";
+import { boolean } from "yup";
+import { CheckOutlined } from "@mui/icons-material";
 
 const AddEvents = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const eventId = location.state?.eventId || null;
+  //const { eventId } = useParams();
 
   const [formData, setFormData] = useState({
-    eventType: "",
-    eventName: "",
-    eventStartDate: "",
-    eventEndDate: "",
+    type: "",
+    title: "",
+    startDate: "",
+    endDate: "",
     eventDate: "",
-    eventDuration: "",
+    duration: "",
     ageLimit: "",
-    eventVenue: "",
-    eventCity: "",
-    eventState: "",
+    location: "",
+    city: "",
+    state: "",
     artistName: "",
-    eventLanguage: "",
-    eventFullInfo: "",
-    eventShortInfo: "",
-    noTickets: "",
-    eventStatus: "",
-    thubImage: null,
-    multiIMages: [],
-    popularEvent: false,
-    featuredEvent: false,
-    manualTicket: false,
+    language: "",
+    description: "",
+    brief: "",
+    noOfTickets: "",
+    status: "",
+    thumbUrl: null,
+    isPopular: false,
+    isFeatured: false,
+    isManual: false,
   });
 
   const [loading, setLoading] = useState(false);
   const [eventTypes, setEventTypes] = useState([]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -55,6 +60,7 @@ const AddEvents = () => {
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
+    console.log(name, checked, Boolean(checked)); // Logs the name, checked value, and its boolean conversion
     setFormData({ ...formData, [name]: checked });
   };
 
@@ -71,58 +77,22 @@ const AddEvents = () => {
     setLoading(true);
 
     const eventData = new FormData();
-
-    // Ensure all required fields are appended correctly
-    eventData.append("type", formData.eventType);
-    eventData.append("title", formData.eventName);
-    eventData.append("startDate", new Date(formData.eventStartDate).toISOString()); // Ensure valid date format
-    eventData.append("endDate", new Date(formData.eventEndDate).toISOString()); // Ensure valid date format
-    eventData.append("eventDate", new Date(formData.eventDate).toISOString()); // Ensure valid date format
-    eventData.append("duration", 30);
-    eventData.append("ageLimit", 18);
-    eventData.append("location", formData.eventVenue);
-    eventData.append("city", formData.eventCity);
-    eventData.append("state", formData.eventState);
-    eventData.append("artistName", formData.artistName);
-    eventData.append("language", formData.eventLanguage);
-    eventData.append("description", formData.eventFullInfo);
-    eventData.append("brief", formData.eventShortInfo);
-    eventData.append("noOfTickets", formData.noTickets); // Ensure this field is correct
-    eventData.append("status", formData.eventStatus);
-    eventData.append("isPopular", formData.popularEvent);
-    eventData.append("isFeatured", formData.featuredEvent);
-    eventData.append("isManual", formData.manualTicket);
-
-    // Thumbnail (if exists)
-    // if (formData.thubImage) {
-    //   eventData.append("thumbnail", formData.thubImage);
-    // }
-
-    // Multiple images (if exists)
-    // if (formData.multiIMages.length > 0) {
-    //   formData.multiIMages.forEach((image) => eventData.append("images", image));
-    // }
-
-    // Log the data for debugging
-    console.log("Event Data to Submit:", eventData);
+    Object.entries(formData).forEach(([key, value]) => {
+      eventData.append(key, value);
+    });
 
     try {
-      const response = await api.post("/events", eventData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await api.post("/events", eventData);
       alert("Event created successfully");
       navigate("/events");
     } catch (error) {
-      console.error("Error creating event:", error.response || error);
+      console.error("Error creating event:", error);
       alert("Failed to create event");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch event types from API
   useEffect(() => {
     const fetchEventTypes = async () => {
       try {
@@ -146,6 +116,58 @@ const AddEvents = () => {
 
     fetchEventTypes();
   }, []);
+
+  useEffect(() => {
+    if (eventId) {
+      const fetchEventData = async () => {
+        try {
+          const response = await api.get(`/events/${eventId}`);
+          const data = response.data.data;
+          console.log(data);
+          setFormData({
+            type: data.type || "",
+            title: data.title || "",
+            startDate: data.startDate || "",
+            endDate: data.endDate || "",
+            eventDate: data.eventDate || "",
+            duration: data.duration || "",
+            ageLimit: data.ageLimit || "",
+            location: data.location || "",
+            city: data.city || "",
+            state: data.state || "",
+            artistName: data.artistName || "",
+            language: data.language || "",
+            description: data.description || "",
+            brief: data.brief || "",
+            noOfTickets: data.noOfTickets || "",
+            status: data.status || "",
+            isPopular: data.isPopular || false,
+            isFeatured: data.isFeatured || false,
+            isManual: data.isManual || false,
+          });
+        } catch (error) {
+          console.error("Error fetching event data:", error);
+        }
+      };
+
+      fetchEventData();
+    }
+  }, [eventId]);
+
+  const updateEvent = async () => {
+    setLoading(true);
+
+    try {
+      await api.put(`/events/${eventId}`, formData);
+      alert("Event updated successfully");
+      navigate("/events");
+    } catch (error) {
+      console.error("Error updating event:", error);
+      alert("Failed to update event");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const inputStyle = { width: "45%", margin: "10px 25px", lineHeight: "44px" };
   const selectStyle = { width: "45%", margin: "10px 25px", padding: "10px", height: "45px" };
@@ -181,14 +203,13 @@ const AddEvents = () => {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3} px={2}>
-                {/* Checkboxes */}
                 <MDBox style={{ display: "flex" }}>
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.popularEvent}
+                        checked={formData.isPopular}
                         onChange={handleCheckboxChange}
-                        name="popularEvent"
+                        name="isPopular"
                       />
                     }
                     label="Popular Event"
@@ -197,9 +218,9 @@ const AddEvents = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.featuredEvent}
+                        checked={formData.isFeatured}
                         onChange={handleCheckboxChange}
-                        name="featuredEvent"
+                        name="isFeatured"
                       />
                     }
                     label="Featured Event"
@@ -208,59 +229,58 @@ const AddEvents = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.manualTicket}
+                        checked={formData.isManual}
                         onChange={handleCheckboxChange}
-                        name="manualTicket"
+                        name="isManual"
                       />
                     }
                     label="Manual Ticket"
                     style={inputStyle}
                   />
                 </MDBox>
-                {/* Form Fields */}
                 <Select
-                  name="eventType"
-                  label="Event Type"
+                  name="type"
                   style={inputStyle}
-                  value={formData.eventType}
+                  value={formData.type || ""} // Ensure it defaults to an empty string
                   onChange={handleInputChange}
                   displayEmpty
                 >
                   <MenuItem value="" disabled>
                     Select Event Type
                   </MenuItem>
-                  {Array.isArray(eventTypes) &&
+                  {eventTypes && Array.isArray(eventTypes) && eventTypes.length > 0 ? (
                     eventTypes.map((type) => (
                       <MenuItem key={type.categoryId} value={type.name}>
                         {type.name}
                       </MenuItem>
-                    ))}
+                    ))
+                  ) : (
+                    <MenuItem disabled>No Event Types Available</MenuItem>
+                  )}
                 </Select>
                 <TextField
-                  name="eventName"
+                  name="title"
                   label="Event Name"
                   style={inputStyle}
-                  value={formData.eventName}
+                  value={formData.title}
                   onChange={handleInputChange}
                 />
                 <TextField
-                  name="eventStartDate"
+                  name="startDate"
                   label="Event Start Date"
                   type="datetime-local"
                   style={inputStyle}
-                  margin="normal"
-                  value={formData.eventStartDate}
+                  value={formData.startDate ? formData.startDate.slice(0, 16) : ""}
                   onChange={handleInputChange}
                   InputLabelProps={{ shrink: true }}
                 />
                 <TextField
-                  name="eventEndDate"
+                  name="endDate"
                   label="Event End Date"
                   type="datetime-local"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.endDate ? formData.endDate.slice(0, 16) : ""}
                   onChange={handleInputChange}
-                  value={formData.eventEndDate}
                   InputLabelProps={{ shrink: true }}
                 />
                 <TextField
@@ -268,20 +288,18 @@ const AddEvents = () => {
                   label="Event Date"
                   type="date"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.eventDate ? formData.eventDate.slice(0, 10) : ""}
                   onChange={handleInputChange}
-                  value={formData.eventDate}
                   InputLabelProps={{ shrink: true }}
                 />
                 <Select
-                  name="eventDuration"
-                  label="Event Duration"
+                  name="duration"
                   style={selectStyle}
-                  value={formData.eventDuration}
-                  onChange={(e) => setFormData({ ...formData, eventDuration: e.target.value })}
+                  value={formData.duration || ""} // Default to empty string
+                  onChange={handleInputChange}
                   displayEmpty
                 >
-                  <MenuItem value="Select" disabled>
+                  <MenuItem value="" disabled>
                     Select Duration
                   </MenuItem>
                   <MenuItem value="1 hour">1 hour</MenuItem>
@@ -290,15 +308,15 @@ const AddEvents = () => {
                   <MenuItem value="Half day">Half day</MenuItem>
                   <MenuItem value="Full day">Full day</MenuItem>
                 </Select>
+
                 <Select
                   name="ageLimit"
-                  label="Age Limit"
                   style={selectStyle}
-                  value={formData.ageLimit}
-                  onChange={(e) => setFormData({ ...formData, ageLimit: e.target.value })}
+                  value={formData.ageLimit || ""} // Default to empty string
+                  onChange={handleInputChange}
                   displayEmpty
                 >
-                  <MenuItem value="Select" disabled>
+                  <MenuItem value="" disabled>
                     Select Age Limit
                   </MenuItem>
                   <MenuItem value="All Ages">All Ages</MenuItem>
@@ -306,89 +324,81 @@ const AddEvents = () => {
                   <MenuItem value="21+">21+</MenuItem>
                   <MenuItem value="No Limit">No Limit</MenuItem>
                 </Select>
+
                 <TextField
-                  name="eventVenue"
+                  name="location"
                   label="Event Venue"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.location}
                   onChange={handleInputChange}
-                  value={formData.eventVenue}
                 />
                 <TextField
-                  name="eventCity"
+                  name="city"
                   label="Event City"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.city}
                   onChange={handleInputChange}
-                  value={formData.eventCity}
                 />
                 <TextField
-                  name="eventState"
+                  name="state"
                   label="Event State"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.state}
                   onChange={handleInputChange}
-                  value={formData.eventState}
                 />
                 <TextField
                   name="artistName"
                   label="Artist Name"
                   style={inputStyle}
-                  margin="normal"
-                  onChange={handleInputChange}
                   value={formData.artistName}
+                  onChange={handleInputChange}
                 />
                 <Select
-                  name="eventLanguage"
-                  label="Event Language"
+                  name="language"
                   style={selectStyle}
+                  value={formData.language}
                   onChange={handleInputChange}
-                  value={formData.eventLanguage}
                   displayEmpty
                 >
-                  <MenuItem value="Select" disabled>
+                  <MenuItem value="" disabled>
                     Select Language
                   </MenuItem>
                   <MenuItem value="Telugu">Telugu</MenuItem>
                   <MenuItem value="English">English</MenuItem>
                 </Select>
                 <TextField
-                  name="eventFullInfo"
+                  name="description"
                   label="Event Full Info"
                   style={fullWidthInputStyle}
-                  margin="normal"
-                  value={formData.eventFullInfo}
+                  value={formData.description}
                   multiline
                   rows={4}
-                  onChange={(e) => setFormData({ ...formData, eventFullInfo: e.target.value })}
+                  onChange={handleInputChange}
                 />
                 <TextField
-                  name="eventShortInfo"
+                  name="brief"
                   label="Event Short Info"
                   style={fullWidthInputStyle}
-                  margin="normal"
-                  value={formData.eventShortInfo}
+                  value={formData.brief}
                   multiline
                   rows={3}
-                  onChange={(e) => setFormData({ ...formData, eventShortInfo: e.target.value })}
+                  onChange={handleInputChange}
                 />
                 <TextField
-                  name="noTickets"
+                  name="noOfTickets"
                   label="No Tickets"
                   style={inputStyle}
-                  margin="normal"
+                  value={formData.noOfTickets}
                   onChange={handleInputChange}
-                  value={formData.noTickets}
                 />
                 <Select
-                  labelId="event-status-label"
-                  name="eventStatus"
+                  name="status"
                   style={selectStyle}
-                  value={formData.eventStatus}
-                  onChange={(e) => setFormData({ ...formData, eventStatus: e.target.value })}
+                  value={formData.status}
+                  onChange={handleInputChange}
                   displayEmpty
                 >
-                  <MenuItem value="Select" disabled>
+                  <MenuItem value="" disabled>
                     Event Status
                   </MenuItem>
                   <MenuItem value="Draft">Draft</MenuItem>
@@ -411,28 +421,33 @@ const AddEvents = () => {
                   inputProps={{ multiple: true, accept: "image/*" }}
                   onChange={handleFileChange}
                 />
-                <MDBox
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    marginTop: "20px",
-                  }}
-                >
+                <MDBox style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
                   <Button
                     variant="contained"
                     style={cancelButton}
-                    onClick={() => navigate("/events")} // Navigate back to events listing page
+                    onClick={() => navigate("/events")}
                   >
                     Cancel
                   </Button>
-                  <Button
-                    variant="contained"
-                    style={submitButton}
-                    onClick={handleSubmit}
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Submit"}
-                  </Button>
+                  {eventId ? (
+                    <Button
+                      variant="contained"
+                      style={submitButton}
+                      onClick={updateEvent}
+                      disabled={loading}
+                    >
+                      {loading ? "Updating..." : "Update"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      style={submitButton}
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      {loading ? "Submitting..." : "Submit"}
+                    </Button>
+                  )}
                 </MDBox>
               </MDBox>
             </Card>
