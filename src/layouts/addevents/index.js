@@ -8,24 +8,33 @@ import {
   MenuItem,
   Checkbox,
   FormControlLabel,
+  Accordion,
+  TableContainer,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Paper,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
+import CreateIcon from "@mui/icons-material/Create";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import "../styles.css"; // Custom styles
 import api from "../api";
-import { useParams } from "react-router-dom";
-import { boolean } from "yup";
-import { CheckOutlined } from "@mui/icons-material";
-
+import Seating from "./seating";
 const AddEvents = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const eventId = location.state?.eventId || null;
   //const { eventId } = useParams();
+
+  const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
 
   const [formData, setFormData] = useState({
     type: "",
@@ -84,7 +93,7 @@ const AddEvents = () => {
     try {
       const response = await api.post("/events", eventData);
       alert("Event created successfully");
-      navigate("/events");
+      fetchEventData();
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event");
@@ -144,6 +153,9 @@ const AddEvents = () => {
             isPopular: data.isPopular || false,
             isFeatured: data.isFeatured || false,
             isManual: data.isManual || false,
+            zoneName: data.zoneName || "",
+            price: data.price || 0,
+            capacity: data.capacity || 0,
           });
         } catch (error) {
           console.error("Error fetching event data:", error);
@@ -170,6 +182,7 @@ const AddEvents = () => {
   };
 
   const inputStyle = { width: "45%", margin: "10px 25px", lineHeight: "44px" };
+  const inputZone = { width: "30%", margin: "10px 25px", lineHeight: "44px" };
   const selectStyle = { width: "45%", margin: "10px 25px", padding: "10px", height: "45px" };
   const fullWidthInputStyle = { width: "94%", margin: "10px 25px" };
   const cancelButton = { backgroundColor: "#ef3f2c", color: "#fff", margin: "10px" };
@@ -203,252 +216,312 @@ const AddEvents = () => {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3} px={2}>
-                <MDBox style={{ display: "flex" }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.isPopular}
-                        onChange={handleCheckboxChange}
-                        name="isPopular"
+                <Accordion style={{ border: "1px solid #ddd" }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Event Details</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <MDBox>
+                      <MDBox style={{ display: "flex" }}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={formData.isPopular}
+                              onChange={handleCheckboxChange}
+                              name="isPopular"
+                            />
+                          }
+                          label="Popular Event"
+                          style={inputStyle}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={formData.isFeatured}
+                              onChange={handleCheckboxChange}
+                              name="isFeatured"
+                            />
+                          }
+                          label="Featured Event"
+                          style={inputStyle}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={formData.isManual}
+                              onChange={handleCheckboxChange}
+                              name="isManual"
+                            />
+                          }
+                          label="Manual Ticket"
+                          style={inputStyle}
+                        />
+                      </MDBox>
+                      <Select
+                        name="type"
+                        style={inputStyle}
+                        value={formData.type || ""} // Ensure it defaults to an empty string
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Event Type
+                        </MenuItem>
+                        {eventTypes && Array.isArray(eventTypes) && eventTypes.length > 0 ? (
+                          eventTypes.map((type) => (
+                            <MenuItem key={type.categoryId} value={type.name}>
+                              {type.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>No Event Types Available</MenuItem>
+                        )}
+                      </Select>
+                      <TextField
+                        name="title"
+                        label="Event Name"
+                        style={inputStyle}
+                        value={formData.title}
+                        onChange={handleInputChange}
                       />
-                    }
-                    label="Popular Event"
-                    style={inputStyle}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.isFeatured}
-                        onChange={handleCheckboxChange}
-                        name="isFeatured"
+                      <TextField
+                        name="startDate"
+                        label="Event Start Date"
+                        type="datetime-local"
+                        style={inputStyle}
+                        value={formData.startDate ? formData.startDate.slice(0, 16) : ""}
+                        onChange={handleInputChange}
+                        InputLabelProps={{ shrink: true }}
                       />
-                    }
-                    label="Featured Event"
-                    style={inputStyle}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.isManual}
-                        onChange={handleCheckboxChange}
-                        name="isManual"
+                      <TextField
+                        name="endDate"
+                        label="Event End Date"
+                        type="datetime-local"
+                        style={inputStyle}
+                        value={formData.endDate ? formData.endDate.slice(0, 16) : ""}
+                        onChange={handleInputChange}
+                        InputLabelProps={{ shrink: true }}
                       />
-                    }
-                    label="Manual Ticket"
-                    style={inputStyle}
-                  />
-                </MDBox>
-                <Select
-                  name="type"
-                  style={inputStyle}
-                  value={formData.type || ""} // Ensure it defaults to an empty string
-                  onChange={handleInputChange}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Select Event Type
-                  </MenuItem>
-                  {eventTypes && Array.isArray(eventTypes) && eventTypes.length > 0 ? (
-                    eventTypes.map((type) => (
-                      <MenuItem key={type.categoryId} value={type.name}>
-                        {type.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>No Event Types Available</MenuItem>
-                  )}
-                </Select>
-                <TextField
-                  name="title"
-                  label="Event Name"
-                  style={inputStyle}
-                  value={formData.title}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="startDate"
-                  label="Event Start Date"
-                  type="datetime-local"
-                  style={inputStyle}
-                  value={formData.startDate ? formData.startDate.slice(0, 16) : ""}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  name="endDate"
-                  label="Event End Date"
-                  type="datetime-local"
-                  style={inputStyle}
-                  value={formData.endDate ? formData.endDate.slice(0, 16) : ""}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  name="eventDate"
-                  label="Event Date"
-                  type="date"
-                  style={inputStyle}
-                  value={formData.eventDate ? formData.eventDate.slice(0, 10) : ""}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-                <Select
-                  name="duration"
-                  style={selectStyle}
-                  value={formData.duration || ""} // Default to empty string
-                  onChange={handleInputChange}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Select Duration
-                  </MenuItem>
-                  <MenuItem value="1 hour">1 hour</MenuItem>
-                  <MenuItem value="2 hours">2 hours</MenuItem>
-                  <MenuItem value="3 hours">3 hours</MenuItem>
-                  <MenuItem value="Half day">Half day</MenuItem>
-                  <MenuItem value="Full day">Full day</MenuItem>
-                </Select>
+                      <TextField
+                        name="eventDate"
+                        label="Event Date"
+                        type="date"
+                        style={inputStyle}
+                        value={formData.eventDate ? formData.eventDate.slice(0, 10) : ""}
+                        onChange={handleInputChange}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <Select
+                        name="duration"
+                        style={selectStyle}
+                        value={formData.duration || ""} // Default to empty string
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Duration
+                        </MenuItem>
+                        <MenuItem value="1 hour">1 hour</MenuItem>
+                        <MenuItem value="2 hours">2 hours</MenuItem>
+                        <MenuItem value="3 hours">3 hours</MenuItem>
+                        <MenuItem value="Half day">Half day</MenuItem>
+                        <MenuItem value="Full day">Full day</MenuItem>
+                      </Select>
 
-                <Select
-                  name="ageLimit"
-                  style={selectStyle}
-                  value={formData.ageLimit || ""} // Default to empty string
-                  onChange={handleInputChange}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Select Age Limit
-                  </MenuItem>
-                  <MenuItem value="All Ages">All Ages</MenuItem>
-                  <MenuItem value="18+">18+</MenuItem>
-                  <MenuItem value="21+">21+</MenuItem>
-                  <MenuItem value="No Limit">No Limit</MenuItem>
-                </Select>
+                      <Select
+                        name="ageLimit"
+                        style={selectStyle}
+                        value={formData.ageLimit || ""} // Default to empty string
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Age Limit
+                        </MenuItem>
+                        <MenuItem value="All Ages">All Ages</MenuItem>
+                        <MenuItem value="18+">18+</MenuItem>
+                        <MenuItem value="21+">21+</MenuItem>
+                        <MenuItem value="No Limit">No Limit</MenuItem>
+                      </Select>
 
-                <TextField
-                  name="location"
-                  label="Event Venue"
-                  style={inputStyle}
-                  value={formData.location}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="city"
-                  label="Event City"
-                  style={inputStyle}
-                  value={formData.city}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="state"
-                  label="Event State"
-                  style={inputStyle}
-                  value={formData.state}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="artistName"
-                  label="Artist Name"
-                  style={inputStyle}
-                  value={formData.artistName}
-                  onChange={handleInputChange}
-                />
-                <Select
-                  name="language"
-                  style={selectStyle}
-                  value={formData.language}
-                  onChange={handleInputChange}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Select Language
-                  </MenuItem>
-                  <MenuItem value="Telugu">Telugu</MenuItem>
-                  <MenuItem value="English">English</MenuItem>
-                </Select>
-                <TextField
-                  name="description"
-                  label="Event Full Info"
-                  style={fullWidthInputStyle}
-                  value={formData.description}
-                  multiline
-                  rows={4}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="brief"
-                  label="Event Short Info"
-                  style={fullWidthInputStyle}
-                  value={formData.brief}
-                  multiline
-                  rows={3}
-                  onChange={handleInputChange}
-                />
-                <TextField
-                  name="noOfTickets"
-                  label="No Tickets"
-                  style={inputStyle}
-                  value={formData.noOfTickets}
-                  onChange={handleInputChange}
-                />
-                <Select
-                  name="status"
-                  style={selectStyle}
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Event Status
-                  </MenuItem>
-                  <MenuItem value="Draft">Draft</MenuItem>
-                  <MenuItem value="Published">Published</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </Select>
-                <TextField
-                  name="thubImage"
-                  type="file"
-                  style={inputStyle}
-                  InputLabelProps={{ shrink: true }}
-                  onChange={handleFileChange}
-                  inputProps={{ accept: "image/*" }}
-                />
-                <TextField
-                  name="multiIMages"
-                  type="file"
-                  style={inputStyle}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ multiple: true, accept: "image/*" }}
-                  onChange={handleFileChange}
-                />
-                <MDBox style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
-                  <Button
-                    variant="contained"
-                    style={cancelButton}
-                    onClick={() => navigate("/events")}
-                  >
-                    Cancel
-                  </Button>
-                  {eventId ? (
-                    <Button
-                      variant="contained"
-                      style={submitButton}
-                      onClick={updateEvent}
-                      disabled={loading}
+                      <TextField
+                        name="location"
+                        label="Event Venue"
+                        style={inputStyle}
+                        value={formData.location}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="city"
+                        label="Event City"
+                        style={inputStyle}
+                        value={formData.city}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="state"
+                        label="Event State"
+                        style={inputStyle}
+                        value={formData.state}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="artistName"
+                        label="Artist Name"
+                        style={inputStyle}
+                        value={formData.artistName}
+                        onChange={handleInputChange}
+                      />
+                      <Select
+                        name="language"
+                        style={selectStyle}
+                        value={formData.language}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Language
+                        </MenuItem>
+                        <MenuItem value="Telugu">Telugu</MenuItem>
+                        <MenuItem value="English">English</MenuItem>
+                      </Select>
+                      <TextField
+                        name="description"
+                        label="Event Full Info"
+                        style={fullWidthInputStyle}
+                        value={formData.description}
+                        multiline
+                        rows={4}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="brief"
+                        label="Event Short Info"
+                        style={fullWidthInputStyle}
+                        value={formData.brief}
+                        multiline
+                        rows={3}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="noOfTickets"
+                        label="No Tickets"
+                        style={inputStyle}
+                        value={formData.noOfTickets}
+                        onChange={handleInputChange}
+                      />
+                      <Select
+                        name="status"
+                        style={selectStyle}
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Event Status
+                        </MenuItem>
+                        <MenuItem value="Draft">Draft</MenuItem>
+                        <MenuItem value="Published">Published</MenuItem>
+                        <MenuItem value="Inactive">Inactive</MenuItem>
+                      </Select>
+                      <TextField
+                        name="thubImage"
+                        type="file"
+                        style={inputStyle}
+                        InputLabelProps={{ shrink: true }}
+                        onChange={handleFileChange}
+                        inputProps={{ accept: "image/*" }}
+                      />
+                      <MDBox
+                        style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
+                      >
+                        <Button
+                          variant="contained"
+                          style={cancelButton}
+                          onClick={() => navigate("/events")}
+                        >
+                          Cancel
+                        </Button>
+                        {eventId ? (
+                          <Button
+                            variant="contained"
+                            style={submitButton}
+                            onClick={updateEvent}
+                            disabled={loading}
+                          >
+                            {loading ? "Updating..." : "Update"}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            style={submitButton}
+                            onClick={handleSubmit}
+                            disabled={loading}
+                          >
+                            {loading ? "Submitting..." : "Submit"}
+                          </Button>
+                        )}
+                      </MDBox>
+                    </MDBox>
+                  </AccordionDetails>
+                </Accordion>
+              </MDBox>
+              <MDBox pt={3} px={2}>
+                <Accordion style={{ border: "1px solid #ddd" }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Event Seating Options</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Seating eventId={eventId} />
+                  </AccordionDetails>
+                </Accordion>
+              </MDBox>
+              <MDBox pt={3} px={2}>
+                <Accordion style={{ border: "1px solid #ddd" }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Event Gallery</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TextField
+                      name="multiIMages"
+                      type="file"
+                      style={inputStyle}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ multiple: true, accept: "image/*" }}
+                      onChange={handleFileChange}
+                    />
+                    <MDBox
+                      style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
                     >
-                      {loading ? "Updating..." : "Update"}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      style={submitButton}
-                      onClick={handleSubmit}
-                      disabled={loading}
-                    >
-                      {loading ? "Submitting..." : "Submit"}
-                    </Button>
-                  )}
-                </MDBox>
+                      <Button
+                        variant="contained"
+                        style={cancelButton}
+                        onClick={() => navigate("/events")}
+                      >
+                        Cancel
+                      </Button>
+                      {eventId ? (
+                        <Button
+                          variant="contained"
+                          style={submitButton}
+                          onClick={updateEvent}
+                          disabled={loading}
+                        >
+                          {loading ? "Updating..." : "Update"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          style={submitButton}
+                          onClick={handleSubmit}
+                          disabled={loading}
+                        >
+                          {loading ? "Submitting..." : "Submit"}
+                        </Button>
+                      )}
+                    </MDBox>
+                  </AccordionDetails>
+                </Accordion>
               </MDBox>
             </Card>
           </Grid>

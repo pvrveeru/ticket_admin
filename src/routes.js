@@ -82,7 +82,7 @@ const routes = [
     name: "Add Events",
     key: "addevents",
     icon: <EmojiEventsIcon sx={{ fontSize: "30px !important" }} />,
-    route: "/addevents/:eventId?",
+    route: "/addevents",
     component: <Addevents />,
   },
   {
