@@ -466,63 +466,68 @@ const AddEvents = () => {
                   </AccordionDetails>
                 </Accordion>
               </MDBox>
-              <MDBox pt={3} px={2}>
-                <Accordion style={{ border: "1px solid #ddd" }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Event Seating Options</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Seating eventId={eventId} />
-                  </AccordionDetails>
-                </Accordion>
-              </MDBox>
-              <MDBox pt={3} px={2}>
-                <Accordion style={{ border: "1px solid #ddd" }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Event Gallery</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <TextField
-                      name="multiIMages"
-                      type="file"
-                      style={inputStyle}
-                      InputLabelProps={{ shrink: true }}
-                      inputProps={{ multiple: true, accept: "image/*" }}
-                      onChange={handleFileChange}
-                    />
-                    <MDBox
-                      style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
-                    >
-                      <Button
-                        variant="contained"
-                        style={cancelButton}
-                        onClick={() => navigate("/events")}
+              {eventId && (
+                <MDBox pt={3} px={2}>
+                  <Accordion style={{ border: "1px solid #ddd" }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography>Event Seating Options</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Seating eventId={eventId} />
+                    </AccordionDetails>
+                  </Accordion>
+                </MDBox>
+              )}
+
+              {eventId && (
+                <MDBox pt={3} px={2}>
+                  <Accordion style={{ border: "1px solid #ddd" }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography>Event Gallery</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <TextField
+                        name="multiIMages"
+                        type="file"
+                        style={inputStyle}
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ multiple: true, accept: "image/*" }}
+                        onChange={handleFileChange}
+                      />
+                      <MDBox
+                        style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
                       >
-                        Cancel
-                      </Button>
-                      {eventId ? (
                         <Button
                           variant="contained"
-                          style={submitButton}
-                          onClick={updateEvent}
-                          disabled={loading}
+                          style={cancelButton}
+                          onClick={() => navigate("/events")}
                         >
-                          {loading ? "Updating..." : "Update"}
+                          Cancel
                         </Button>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          style={submitButton}
-                          onClick={handleSubmit}
-                          disabled={loading}
-                        >
-                          {loading ? "Submitting..." : "Submit"}
-                        </Button>
-                      )}
-                    </MDBox>
-                  </AccordionDetails>
-                </Accordion>
-              </MDBox>
+                        {eventId ? (
+                          <Button
+                            variant="contained"
+                            style={submitButton}
+                            onClick={updateEvent}
+                            disabled={loading}
+                          >
+                            {loading ? "Updating..." : "Update"}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            style={submitButton}
+                            onClick={handleSubmit}
+                            disabled={loading}
+                          >
+                            {loading ? "Submitting..." : "Submit"}
+                          </Button>
+                        )}
+                      </MDBox>
+                    </AccordionDetails>
+                  </Accordion>
+                </MDBox>
+              )}
             </Card>
           </Grid>
         </Grid>

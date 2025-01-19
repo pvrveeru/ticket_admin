@@ -51,7 +51,7 @@ function Dashboard() {
     const fetchEvents = async () => {
       try {
         const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=10&offset=0"
+          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
         );
         console.log("Full API Response:", response.data);
 
