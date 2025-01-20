@@ -4,9 +4,10 @@ import CreateIcon from "@mui/icons-material/Create";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PropTypes from "prop-types";
 import api from "../api";
+import MDButton from "components/MDButton";
 
 const Seating = ({ eventId }) => {
-  const [formData, setFormData] = useState({ zoneName: "", price: 0, seatsAvailable: 0 });
+  const [formData, setFormData] = useState({ zoneName: "", price: 0, capacity: 0 });
   const [zoneList, setZoneList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +36,7 @@ const Seating = ({ eventId }) => {
       eventId: Number(eventId),
       zoneName: formData.zoneName,
       price: parseFloat(formData.price),
-      seatsAvailable: parseInt(formData.seatsAvailable, 10),
+      capacity: parseInt(formData.capacity, 10),
     };
 
     try {
@@ -50,7 +51,7 @@ const Seating = ({ eventId }) => {
       }
       // Refresh the list and reset the form
       await fetchZoneData();
-      setFormData({ zoneName: "", price: 0, seatsAvailable: 0 });
+      setFormData({ zoneName: "", price: 0, capacity: 0 });
       setIsEditing(false);
       setEditingZoneId(null);
     } catch (error) {
@@ -78,7 +79,7 @@ const Seating = ({ eventId }) => {
       setFormData({
         zoneName: zoneToEdit.zoneName,
         price: zoneToEdit.price,
-        seatsAvailable: zoneToEdit.seatsAvailable || 0, // Handle null seatsAvailable
+        capacity: zoneToEdit.capacity || 0, // Handle null capacity
       });
       setIsEditing(true);
       setEditingZoneId(seatingId); // Save the ID of the zone being edited
@@ -110,10 +111,10 @@ const Seating = ({ eventId }) => {
           style={{ width: "30%", margin: "10px 25px", lineHeight: "44px" }}
         />
         <TextField
-          label="Zone seatsAvailable"
-          name="seatsAvailable"
+          label="Zone capacity"
+          name="capacity"
           type="number"
-          value={formData.seatsAvailable}
+          value={formData.capacity}
           onChange={handleZoneInputChange}
           style={{ width: "30%", margin: "10px 25px", lineHeight: "44px" }}
         />
@@ -148,6 +149,7 @@ const Seating = ({ eventId }) => {
               <th style={tableCellStyle}>Zone</th>
               <th style={tableCellStyle}>Price</th>
               <th style={tableCellStyle}>Seating</th>
+              <th style={tableCellStyle}>Capacity</th>
               <th style={tableCellStyle}>Action</th>
             </tr>
           </thead>
@@ -157,29 +159,30 @@ const Seating = ({ eventId }) => {
                 <td style={tableCellStyle}>{zone.zoneName}</td>
                 <td style={tableCellStyle}>{zone.price}</td>
                 <td style={tableCellStyle}>{zone.seatsAvailable || "N/A"}</td>
+                <td style={tableCellStyle}>{zone.capacity || "N/A"}</td>
                 <td style={tableCellStyle}>
-                  <Button
+                  <MDButton
                     style={{ marginRight: "10px" }}
-                    variant="contained"
+                    variant="gradient"
                     color="info"
                     onClick={() => handleEditZone(zone.seatingId)} // Use seatingId here
                   >
                     <CreateIcon />
-                  </Button>
-                  <Button
+                  </MDButton>
+                  <MDButton
                     style={{ marginLeft: "10px" }}
-                    variant="contained"
+                    variant="gradient"
                     color="error"
                     onClick={() => handleDeleteZone(zone.seatingId)} // Use seatingId here
                   >
                     <DeleteIcon />
-                  </Button>
+                  </MDButton>
                 </td>
               </tr>
             ))}
             {zoneList.length === 0 && (
               <tr>
-                <td colSpan="4" style={tableCellStyle}>
+                <td colSpan="5" style={tableCellStyle}>
                   No zones available.
                 </td>
               </tr>
