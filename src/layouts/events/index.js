@@ -23,9 +23,10 @@ import api from "../api";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
-  const [rowsPerPage, setRowsPerPage] = useState(15); // Default rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Default rows per page
   const [page, setPage] = useState(0);
   const navigate = useNavigate();
+  const [totalCount, setTotalCount] = useState(0); // To store the total count of events
 
   // Fetch data from API
   const fetchEvents = async () => {
@@ -34,7 +35,9 @@ const Events = () => {
       const response = await api.get(
         `/events?sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${offset}`
       );
-      setEvents(response.data.data); // Update the events state with API response
+
+      setEvents(response.data.data);
+      setTotalCount(response.data.totalCount);
     } catch (error) {
       console.error("Error fetching events:", error);
     }
@@ -113,7 +116,7 @@ const Events = () => {
                       <td style={tableCellStyle}>
                         {new Date(event.createdAt).toLocaleDateString()}
                       </td>
-                      <td style={tableCellStyle}>{event.type}</td>
+                      <td style={tableCellStyle}>{event.categoryId.name}</td>
                       <td style={tableCellStyle}>{event.title}</td>
                       <td style={tableCellStyle}>
                         {new Date(event.eventDate).toLocaleDateString()}
@@ -138,7 +141,7 @@ const Events = () => {
               </table>
               <TablePagination
                 component="div"
-                count={events.length} // Update this to total count if available in API response
+                count={totalCount} // Use totalCount for pagination
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}

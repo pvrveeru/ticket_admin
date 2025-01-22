@@ -28,16 +28,21 @@ import axios from "axios";
 import "../styles.css"; // Custom styles
 import api from "../api";
 import Seating from "./seating";
+import Upload from "./upload";
+
 const AddEvents = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const eventId = location.state?.eventId || null;
   //const { eventId } = useParams();
+  const [thumbUrl, setThumbUrl] = useState(""); // Add state for thumbUrl
+  const [layoutImageUrl, setLayoutImageUrl] = useState(""); // Add state for thumbUrl
+  const [galleryImages, setgalleryImages] = useState(""); // Add state for thumbUrl
 
   const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
 
   const [formData, setFormData] = useState({
-    type: "",
+    categoryId: "",
     title: "",
     startDate: "",
     endDate: "",
@@ -53,7 +58,6 @@ const AddEvents = () => {
     brief: "",
     noOfTickets: "",
     status: "",
-    thumbUrl: null,
     isPopular: false,
     isFeatured: false,
     isManual: false,
@@ -82,9 +86,20 @@ const AddEvents = () => {
     }
   };
 
+  const validateForm = () => {
+    const requiredFields = ["title", "startDate", "endDate", "categoryId"];
+    for (let field of requiredFields) {
+      if (!formData[field]) {
+        alert(`Please fill out the ${field} field.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
-
+    console.log("vee", formData.categoryId);
     const eventData = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       eventData.append(key, value);
@@ -134,7 +149,7 @@ const AddEvents = () => {
           const data = response.data.data;
           console.log(data);
           setFormData({
-            type: data.type || "",
+            categoryId: data.category?.categoryId || "", // Set the category name here
             title: data.title || "",
             startDate: data.startDate || "",
             endDate: data.endDate || "",
@@ -153,10 +168,13 @@ const AddEvents = () => {
             isPopular: data.isPopular || false,
             isFeatured: data.isFeatured || false,
             isManual: data.isManual || false,
-            zoneName: data.zoneName || "",
-            price: data.price || 0,
-            capacity: data.capacity || 0,
+            // zoneName: data.zoneName || "",
+            // price: data.price || 0,
+            // capacity: data.capacity || 0,
           });
+          setThumbUrl(data.thumbUrl || ""); // Set thumbUrl separately
+          setLayoutImageUrl(data.layoutImageUrl || "");
+          setgalleryImages(data.galleryImages || []);
         } catch (error) {
           console.error("Error fetching event data:", error);
         }
@@ -258,25 +276,31 @@ const AddEvents = () => {
                         />
                       </MDBox>
                       <Select
-                        name="type"
+                        name="categoryId"
                         style={inputStyle}
-                        value={formData.type || ""} // Ensure it defaults to an empty string
-                        onChange={handleInputChange}
+                        value={formData.categoryId || ""} // Ensure it defaults to an empty string
+                        onChange={(event) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            [event.target.name]: event.target.value, // Correctly updates categoryId
+                          }))
+                        }
                         displayEmpty
                       >
                         <MenuItem value="" disabled>
-                          Select Event Type
+                          Select Event Category
                         </MenuItem>
                         {eventTypes && Array.isArray(eventTypes) && eventTypes.length > 0 ? (
-                          eventTypes.map((type) => (
-                            <MenuItem key={type.categoryId} value={type.name}>
-                              {type.name}
+                          eventTypes.map((category) => (
+                            <MenuItem key={category.categoryId} value={category.categoryId}>
+                              {category.name}
                             </MenuItem>
                           ))
                         ) : (
                           <MenuItem disabled>No Event Types Available</MenuItem>
                         )}
                       </Select>
+
                       <TextField
                         name="title"
                         label="Event Name"
@@ -284,6 +308,57 @@ const AddEvents = () => {
                         value={formData.title}
                         onChange={handleInputChange}
                       />
+                      <Select
+                        name="stage"
+                        style={selectStyle}
+                        //value={formData.stage}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select stage
+                        </MenuItem>
+                        <MenuItem value="Outdoor">Outdoor</MenuItem>
+                        <MenuItem value="Indoor">Indoor</MenuItem>
+                      </Select>
+                      <Select
+                        name="music_type"
+                        style={selectStyle}
+                        //value={formData.music_type}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Music type
+                        </MenuItem>
+                        <MenuItem value="Electronic Dance">Electronic Dance</MenuItem>
+                        <MenuItem value="Rock">Rock</MenuItem>
+                        <MenuItem value="Jazz">Jazz</MenuItem>
+                        <MenuItem value="Dubstep">Dubstep</MenuItem>
+                        <MenuItem value="Rhythm and Blues">Rhythm and Blues</MenuItem>
+                        <MenuItem value="Techno">Techno</MenuItem>
+                        <MenuItem value="Country">Country</MenuItem>
+                        <MenuItem value="Electro">Electro</MenuItem>
+                        <MenuItem value="Indie Rock">Indie Rock</MenuItem>
+                        <MenuItem value="Pop">Pop</MenuItem>
+                        <MenuItem value="Hip Hop">Hip Hop</MenuItem>
+                        <MenuItem value="Classical">Classical</MenuItem>
+                        <MenuItem value="Folk">Folk</MenuItem>
+                        <MenuItem value="Disco">Disco</MenuItem>
+                        <MenuItem value="Romantic">Romantic</MenuItem>
+                        <MenuItem value="International">International</MenuItem>
+                        <MenuItem value="Metal">Metal</MenuItem>
+                        <MenuItem value="Fusion">Fusion</MenuItem>
+                        <MenuItem value="Instrumental">Instrumental</MenuItem>
+                        <MenuItem value="Regional">Regional</MenuItem>
+                        <MenuItem value="Hollywood">Hollywood</MenuItem>
+                        <MenuItem value="Bollywood">Bollywood</MenuItem>
+                        <MenuItem value="Tollywood">Tollywood</MenuItem>
+                        <MenuItem value="Mollywood">Mollywood</MenuItem>
+                        <MenuItem value="Sandalwood">Sandalwood</MenuItem>
+                        <MenuItem value="Kollywood">Kollywood</MenuItem>
+                        <MenuItem value="EDM">EDM</MenuItem>
+                      </Select>
                       <TextField
                         name="startDate"
                         label="Event Start Date"
@@ -351,20 +426,48 @@ const AddEvents = () => {
                         value={formData.location}
                         onChange={handleInputChange}
                       />
-                      <TextField
+                      <Select
                         name="city"
-                        label="Event City"
-                        style={inputStyle}
+                        style={selectStyle}
                         value={formData.city}
                         onChange={handleInputChange}
-                      />
-                      <TextField
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select City
+                        </MenuItem>
+                        <MenuItem value="Visakhapatnam">Visakhapatnam</MenuItem>
+                        <MenuItem value="Vijayawada">Vijayawada</MenuItem>
+                        <MenuItem value="Tirupati">Tirupati</MenuItem>
+                        <MenuItem value="Anantapur">Anantapur</MenuItem>
+                        <MenuItem value="Amaravati">Amaravati</MenuItem>
+                        <MenuItem value="Hyderabad">Hyderabad</MenuItem>
+                        <MenuItem value="Warangal">Warangal</MenuItem>
+                        <MenuItem value="Bengaluru">Bengaluru</MenuItem>
+                        <MenuItem value="Mysuru">Mysuru</MenuItem>
+                        <MenuItem value="Mangaluru">Mangaluru</MenuItem>
+                        <MenuItem value="Chennai">Chennai</MenuItem>
+                        <MenuItem value="Kochi">Kochi</MenuItem>
+                        <MenuItem value="Pune">Pune</MenuItem>
+                        <MenuItem value="Mumbai">Mumbai</MenuItem>
+                      </Select>
+                      <Select
                         name="state"
-                        label="Event State"
-                        style={inputStyle}
+                        style={selectStyle}
                         value={formData.state}
                         onChange={handleInputChange}
-                      />
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select State
+                        </MenuItem>
+                        <MenuItem value="Andhra Pradesh">Andhra Pradesh</MenuItem>
+                        <MenuItem value="Telangana">Telangana</MenuItem>
+                        <MenuItem value="Karnataka">Karnataka</MenuItem>
+                        <MenuItem value="Tamil Nadu">Tamil Nadu</MenuItem>
+                        <MenuItem value="Kerala">Kerala</MenuItem>
+                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                      </Select>
                       <TextField
                         name="artistName"
                         label="Artist Name"
@@ -382,8 +485,15 @@ const AddEvents = () => {
                         <MenuItem value="" disabled>
                           Select Language
                         </MenuItem>
-                        <MenuItem value="Telugu">Telugu</MenuItem>
                         <MenuItem value="English">English</MenuItem>
+                        <MenuItem value="Hindi">Hindi</MenuItem>
+                        <MenuItem value="Telugu">Telugu</MenuItem>
+                        <MenuItem value="Tamil">Tamil</MenuItem>
+                        <MenuItem value="Kannada">Kannada</MenuItem>
+                        <MenuItem value="Malayalam">Malayalam</MenuItem>
+                        <MenuItem value="Marathi">Marathi</MenuItem>
+                        <MenuItem value="Bengali">Bengali</MenuItem>
+                        <MenuItem value="Punjabi">Punjabi</MenuItem>
                       </Select>
                       <TextField
                         name="description"
@@ -411,6 +521,21 @@ const AddEvents = () => {
                         onChange={handleInputChange}
                       />
                       <Select
+                        name="layout_status"
+                        style={selectStyle}
+                        value={formData.layout_status}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Event Layout Status
+                        </MenuItem>
+                        <MenuItem value="Seated">Seated</MenuItem>
+                        <MenuItem value="Standing">Standing</MenuItem>
+                        <MenuItem value="Seated Standing">Seated & Standing</MenuItem>
+                        <MenuItem value="Run">Run</MenuItem>
+                      </Select>
+                      <Select
                         name="status"
                         style={selectStyle}
                         value={formData.status}
@@ -424,14 +549,6 @@ const AddEvents = () => {
                         <MenuItem value="Published">Published</MenuItem>
                         <MenuItem value="Inactive">Inactive</MenuItem>
                       </Select>
-                      <TextField
-                        name="thubImage"
-                        type="file"
-                        style={inputStyle}
-                        InputLabelProps={{ shrink: true }}
-                        onChange={handleFileChange}
-                        inputProps={{ accept: "image/*" }}
-                      />
                       <MDBox
                         style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
                       >
@@ -483,47 +600,15 @@ const AddEvents = () => {
                 <MDBox pt={3} px={2}>
                   <Accordion style={{ border: "1px solid #ddd" }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography>Event Gallery</Typography>
+                      <Typography>Event Images</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                      <TextField
-                        name="multiIMages"
-                        type="file"
-                        style={inputStyle}
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ multiple: true, accept: "image/*" }}
-                        onChange={handleFileChange}
+                      <Upload
+                        eventId={eventId}
+                        thumbUrl={thumbUrl}
+                        layoutImageUrl={layoutImageUrl}
+                        galleryImages={galleryImages}
                       />
-                      <MDBox
-                        style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
-                      >
-                        <Button
-                          variant="contained"
-                          style={cancelButton}
-                          onClick={() => navigate("/events")}
-                        >
-                          Cancel
-                        </Button>
-                        {eventId ? (
-                          <Button
-                            variant="contained"
-                            style={submitButton}
-                            onClick={updateEvent}
-                            disabled={loading}
-                          >
-                            {loading ? "Updating..." : "Update"}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="contained"
-                            style={submitButton}
-                            onClick={handleSubmit}
-                            disabled={loading}
-                          >
-                            {loading ? "Submitting..." : "Submit"}
-                          </Button>
-                        )}
-                      </MDBox>
                     </AccordionDetails>
                   </Accordion>
                 </MDBox>
