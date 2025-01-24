@@ -47,13 +47,16 @@ const Categories = () => {
 
   const handleOpenDialog = (category = null) => {
     setEditingCategory(category);
-    setFormData({ categories: category?.name || "" });
+    setFormData({
+      categories: category?.name || "",
+      uniqueCategoryId: category?.uniqueCategoryId || "",
+    });
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setFormData({ categories: "" });
+    setFormData({ categories: "", uniqueCategoryId: "" });
     setEditingCategory(null);
     setError("");
   };
@@ -157,6 +160,7 @@ const Categories = () => {
                     >
                       <thead style={{ background: "#efefef", fontSize: "15px" }}>
                         <tr>
+                          <th style={tableCellStyle}>ID</th>
                           <th style={tableCellStyle}>Categories</th>
                           <th style={tableCellStyle}>Action</th>
                         </tr>
@@ -164,6 +168,7 @@ const Categories = () => {
                       <tbody style={{ textAlign: "center" }}>
                         {categories.map((category) => (
                           <tr key={category.categoryId}>
+                            <td style={tableCellStyle}>{category.uniqueCategoryId}</td>
                             <td style={tableCellStyle}>{category.name}</td>
                             <td style={tableCellStyle}>
                               <MDButton
@@ -202,6 +207,14 @@ const Categories = () => {
                     {editingCategory ? "Edit Category" : "Add Category"}
                   </DialogTitle>
                   <DialogContent>
+                    <TextField
+                      name="uniqueCategoryId"
+                      label="Unique Category ID"
+                      fullWidth
+                      margin="normal"
+                      value={formData.uniqueCategoryId}
+                      onChange={handleFormChange}
+                    />
                     <TextField
                       name="categories"
                       label="Category Name"

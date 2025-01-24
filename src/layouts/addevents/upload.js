@@ -12,15 +12,28 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
 
   const inputStyle = { margin: "10px", width: "100%" };
 
-  // Sync `thumbUrl` with `images` state when the component mounts or `thumbUrl` changes
-  useEffect(() => {
-    console.log("Received eventId222upload:", galleryImages);
-    console.log("Received eventId222:", thumbUrl);
-
-    if (thumbUrl) {
-      setImages([thumbUrl]); // Initialize with `thumbUrl` if provided
+  const fetchImages = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/uploads/event/thumbnail/${eventId}`);
+      console.log("API Response:", response.data); // Log the full response to debug
+      if (response.status === 200) {
+        // Check if 'images' exists and is an array
+        if (Array.isArray(response.data.images)) {
+          setImages(response.data.images); // Set the fetched images
+        } else {
+          console.warn("Images data is not an array or is missing.");
+          setImages([]); // Fallback to an empty array
+        }
+      } else {
+        console.error("Failed to fetch images", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [thumbUrl]);
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -44,17 +57,18 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
 
     setLoading(true);
     try {
-      const response = await api.post(
-        `/uploads/event/thumbnail/${eventId}`,
-        formData,
-        requestOptions
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to upload: ${response.statusText}`);
+      const response = await api.post(`/uploads/event/layout/${eventId}`, formData, requestOptions);
+      if (response.status === 200) {
+        alert("Images uploaded successfully.");
+        await fetchImages();
+        // Append newly uploaded images to the existing ones
+        setImages((prevImages) => [
+          ...prevImages,
+          ...(Array.isArray(response.data.images) ? response.data.images : []),
+        ]);
+      } else {
+        console.error("Failed to upload images", response.statusText);
       }
-      const result = await response.text();
-      alert("Image uploaded successfully.");
-      console.log(result);
     } catch (error) {
       console.error("Error:", error);
       //alert(`Failed to upload image: ${error.message}`);
@@ -68,7 +82,8 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
     const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
 
     try {
-      await api.delete(`/uploads/event/thumbnail/${eventId}/${fileName}`);
+      //await api.delete(`/uploads/event/thumbnail/${eventId}/${fileName}`);
+      await api.delete(`/uploads/event/thumbnail/${eventId}`);
       alert("Image deleted successfully.");
     } catch (error) {
       console.error("Error deleting image:", error);
@@ -77,6 +92,12 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (eventId) {
+      fetchImages();
+    }
+  }, [eventId]);
 
   return (
     <div>

@@ -3,7 +3,13 @@
   display: block; /* Show on mobile and tablet */
 }
 
-
+h3 {
+  margin-top: 20px;
+  font-weight: normal;
+}
+hr {
+  margin-bottom: 20px;
+}
 @media (min-width: 1024px) {
   .hide-on-desktop {
     display: none; /* Hide on desktop (1024px and larger) */

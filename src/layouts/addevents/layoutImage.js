@@ -10,16 +10,28 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
 
   const inputStyle = { margin: "10px", width: "100%" };
 
-  useEffect(() => {
-    console.log("Received eventId111:", layoutImageUrl);
-  }, [layoutImageUrl]);
-
-  // Fetch images list and sync `thumbUrl`
-  useEffect(() => {
-    if (layoutImageUrl) {
-      setImages([layoutImageUrl]);
+  const fetchImages = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/uploads/event/layout/${eventId}`);
+      console.log("API Response:", response.data); // Log the full response to debug
+      if (response.status === 200) {
+        // Check if 'images' exists and is an array
+        if (Array.isArray(response.data.images)) {
+          setImages(response.data.images); // Set the fetched images
+        } else {
+          console.warn("Images data is not an array or is missing.");
+          setImages([]); // Fallback to an empty array
+        }
+      } else {
+        console.error("Failed to fetch images", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [layoutImageUrl]);
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -44,12 +56,17 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
     setLoading(true);
     try {
       const response = await api.post(`/uploads/event/layout/${eventId}`, formData, requestOptions);
-      if (!response.ok) {
-        throw new Error(`Failed to upload: ${response.statusText}`);
+      if (response.status === 200) {
+        alert("Images uploaded successfully.");
+        await fetchImages();
+        // Append newly uploaded images to the existing ones
+        setImages((prevImages) => [
+          ...prevImages,
+          ...(Array.isArray(response.data.images) ? response.data.images : []),
+        ]);
+      } else {
+        console.error("Failed to upload images", response.statusText);
       }
-      const result = await response.text();
-      alert("Image uploaded successfully.");
-      console.log(result);
     } catch (error) {
       console.error("Error:", error);
       //alert(`Failed to upload image: ${error.message}`);
@@ -63,8 +80,9 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
     const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
 
     try {
-      await api.delete(`/uploads/event/layout/${eventId}/${fileName}`);
+      await api.delete(`/uploads/event/layout/${eventId}`);
       alert("Image deleted successfully.");
+      fetchImages(); // Refresh the images list after deleting
     } catch (error) {
       console.error("Error deleting image:", error);
       alert("Failed to delete image.");
@@ -72,6 +90,12 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (eventId) {
+      fetchImages();
+    }
+  }, [eventId]);
 
   return (
     <div>
@@ -153,7 +177,7 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
 LayoutImage.propTypes = {
   eventId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   thumbUrl: PropTypes.string, // Accept thumbUrl as a prop
-  layoutImageUrl: PropTypes.string, // Accept thumbUrl as a prop
+  layoutImageUrl: PropTypes.string, // Accept layoutImageUrl as a prop
 };
 
 export default LayoutImage;

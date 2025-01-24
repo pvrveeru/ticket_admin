@@ -44,6 +44,7 @@ const AddEvents = () => {
   const [formData, setFormData] = useState({
     categoryId: "",
     title: "",
+    uniqueeventId: "",
     startDate: "",
     endDate: "",
     eventDate: "",
@@ -58,6 +59,9 @@ const AddEvents = () => {
     brief: "",
     noOfTickets: "",
     status: "",
+    stage: "",
+    layoutStatus: "",
+    musicType: "",
     isPopular: false,
     isFeatured: false,
     isManual: false,
@@ -151,6 +155,10 @@ const AddEvents = () => {
           setFormData({
             categoryId: data.category?.categoryId || "", // Set the category name here
             title: data.title || "",
+            uniqueeventId: data.uniqueeventId || "",
+            stage: data.stage || "",
+            layoutStatus: data.layoutStatus || "",
+            musicType: data.musicType || "",
             startDate: data.startDate || "",
             endDate: data.endDate || "",
             eventDate: data.eventDate || "",
@@ -168,9 +176,6 @@ const AddEvents = () => {
             isPopular: data.isPopular || false,
             isFeatured: data.isFeatured || false,
             isManual: data.isManual || false,
-            // zoneName: data.zoneName || "",
-            // price: data.price || 0,
-            // capacity: data.capacity || 0,
           });
           setThumbUrl(data.thumbUrl || ""); // Set thumbUrl separately
           setLayoutImageUrl(data.layoutImageUrl || "");
@@ -275,6 +280,8 @@ const AddEvents = () => {
                           style={inputStyle}
                         />
                       </MDBox>
+                      <h3>Event Info</h3>
+                      <hr></hr>
                       <Select
                         name="categoryId"
                         style={inputStyle}
@@ -308,57 +315,15 @@ const AddEvents = () => {
                         value={formData.title}
                         onChange={handleInputChange}
                       />
-                      <Select
-                        name="stage"
-                        style={selectStyle}
-                        //value={formData.stage}
+                      <TextField
+                        name="uniqueeventId"
+                        label="Unique event ID"
+                        style={inputStyle}
+                        value={formData.uniqueeventId}
                         onChange={handleInputChange}
-                        displayEmpty
-                      >
-                        <MenuItem value="" disabled>
-                          Select stage
-                        </MenuItem>
-                        <MenuItem value="Outdoor">Outdoor</MenuItem>
-                        <MenuItem value="Indoor">Indoor</MenuItem>
-                      </Select>
-                      <Select
-                        name="music_type"
-                        style={selectStyle}
-                        //value={formData.music_type}
-                        onChange={handleInputChange}
-                        displayEmpty
-                      >
-                        <MenuItem value="" disabled>
-                          Select Music type
-                        </MenuItem>
-                        <MenuItem value="Electronic Dance">Electronic Dance</MenuItem>
-                        <MenuItem value="Rock">Rock</MenuItem>
-                        <MenuItem value="Jazz">Jazz</MenuItem>
-                        <MenuItem value="Dubstep">Dubstep</MenuItem>
-                        <MenuItem value="Rhythm and Blues">Rhythm and Blues</MenuItem>
-                        <MenuItem value="Techno">Techno</MenuItem>
-                        <MenuItem value="Country">Country</MenuItem>
-                        <MenuItem value="Electro">Electro</MenuItem>
-                        <MenuItem value="Indie Rock">Indie Rock</MenuItem>
-                        <MenuItem value="Pop">Pop</MenuItem>
-                        <MenuItem value="Hip Hop">Hip Hop</MenuItem>
-                        <MenuItem value="Classical">Classical</MenuItem>
-                        <MenuItem value="Folk">Folk</MenuItem>
-                        <MenuItem value="Disco">Disco</MenuItem>
-                        <MenuItem value="Romantic">Romantic</MenuItem>
-                        <MenuItem value="International">International</MenuItem>
-                        <MenuItem value="Metal">Metal</MenuItem>
-                        <MenuItem value="Fusion">Fusion</MenuItem>
-                        <MenuItem value="Instrumental">Instrumental</MenuItem>
-                        <MenuItem value="Regional">Regional</MenuItem>
-                        <MenuItem value="Hollywood">Hollywood</MenuItem>
-                        <MenuItem value="Bollywood">Bollywood</MenuItem>
-                        <MenuItem value="Tollywood">Tollywood</MenuItem>
-                        <MenuItem value="Mollywood">Mollywood</MenuItem>
-                        <MenuItem value="Sandalwood">Sandalwood</MenuItem>
-                        <MenuItem value="Kollywood">Kollywood</MenuItem>
-                        <MenuItem value="EDM">EDM</MenuItem>
-                      </Select>
+                      />
+                      <h3>Event Date</h3>
+                      <hr></hr>
                       <TextField
                         name="startDate"
                         label="Event Start Date"
@@ -403,6 +368,39 @@ const AddEvents = () => {
                         <MenuItem value="Full day">Full day</MenuItem>
                       </Select>
 
+                      <h3>Event Stage info</h3>
+                      <hr></hr>
+
+                      <Select
+                        name="stage"
+                        style={selectStyle}
+                        //value={formData.stage}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select stage
+                        </MenuItem>
+                        <MenuItem value="Outdoor">Outdoor</MenuItem>
+                        <MenuItem value="Indoor">Indoor</MenuItem>
+                      </Select>
+
+                      <Select
+                        name="layoutStatus"
+                        style={selectStyle}
+                        value={formData.layoutStatus}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Event Layout Status
+                        </MenuItem>
+                        <MenuItem value="Seated">Seated</MenuItem>
+                        <MenuItem value="Standing">Standing</MenuItem>
+                        <MenuItem value="Seated Standing">Seated & Standing</MenuItem>
+                        <MenuItem value="Run">Run</MenuItem>
+                      </Select>
+
                       <Select
                         name="ageLimit"
                         style={selectStyle}
@@ -418,6 +416,17 @@ const AddEvents = () => {
                         <MenuItem value="21+">21+</MenuItem>
                         <MenuItem value="No Limit">No Limit</MenuItem>
                       </Select>
+
+                      <TextField
+                        name="noOfTickets"
+                        label="No Tickets"
+                        style={inputStyle}
+                        value={formData.noOfTickets}
+                        onChange={handleInputChange}
+                      />
+
+                      <h3>Event Venue info</h3>
+                      <hr></hr>
 
                       <TextField
                         name="location"
@@ -468,6 +477,9 @@ const AddEvents = () => {
                         <MenuItem value="Kerala">Kerala</MenuItem>
                         <MenuItem value="Maharashtra">Maharashtra</MenuItem>
                       </Select>
+                      <h3>Event type info</h3>
+                      <hr></hr>
+
                       <TextField
                         name="artistName"
                         label="Artist Name"
@@ -475,6 +487,44 @@ const AddEvents = () => {
                         value={formData.artistName}
                         onChange={handleInputChange}
                       />
+                      <Select
+                        name="musicType"
+                        style={selectStyle}
+                        value={formData.musicType}
+                        onChange={handleInputChange}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          Select Music type
+                        </MenuItem>
+                        <MenuItem value="Electronic Dance">Electronic Dance</MenuItem>
+                        <MenuItem value="Rock">Rock</MenuItem>
+                        <MenuItem value="Jazz">Jazz</MenuItem>
+                        <MenuItem value="Dubstep">Dubstep</MenuItem>
+                        <MenuItem value="Rhythm and Blues">Rhythm and Blues</MenuItem>
+                        <MenuItem value="Techno">Techno</MenuItem>
+                        <MenuItem value="Country">Country</MenuItem>
+                        <MenuItem value="Electro">Electro</MenuItem>
+                        <MenuItem value="Indie Rock">Indie Rock</MenuItem>
+                        <MenuItem value="Pop">Pop</MenuItem>
+                        <MenuItem value="Hip Hop">Hip Hop</MenuItem>
+                        <MenuItem value="Classical">Classical</MenuItem>
+                        <MenuItem value="Folk">Folk</MenuItem>
+                        <MenuItem value="Disco">Disco</MenuItem>
+                        <MenuItem value="Romantic">Romantic</MenuItem>
+                        <MenuItem value="International">International</MenuItem>
+                        <MenuItem value="Metal">Metal</MenuItem>
+                        <MenuItem value="Fusion">Fusion</MenuItem>
+                        <MenuItem value="Instrumental">Instrumental</MenuItem>
+                        <MenuItem value="Regional">Regional</MenuItem>
+                        <MenuItem value="Hollywood">Hollywood</MenuItem>
+                        <MenuItem value="Bollywood">Bollywood</MenuItem>
+                        <MenuItem value="Tollywood">Tollywood</MenuItem>
+                        <MenuItem value="Mollywood">Mollywood</MenuItem>
+                        <MenuItem value="Sandalwood">Sandalwood</MenuItem>
+                        <MenuItem value="Kollywood">Kollywood</MenuItem>
+                        <MenuItem value="EDM">EDM</MenuItem>
+                      </Select>
                       <Select
                         name="language"
                         style={selectStyle}
@@ -495,6 +545,8 @@ const AddEvents = () => {
                         <MenuItem value="Bengali">Bengali</MenuItem>
                         <MenuItem value="Punjabi">Punjabi</MenuItem>
                       </Select>
+                      <h3>Event description</h3>
+                      <hr></hr>
                       <TextField
                         name="description"
                         label="Event Full Info"
@@ -513,28 +565,7 @@ const AddEvents = () => {
                         rows={3}
                         onChange={handleInputChange}
                       />
-                      <TextField
-                        name="noOfTickets"
-                        label="No Tickets"
-                        style={inputStyle}
-                        value={formData.noOfTickets}
-                        onChange={handleInputChange}
-                      />
-                      <Select
-                        name="layout_status"
-                        style={selectStyle}
-                        value={formData.layout_status}
-                        onChange={handleInputChange}
-                        displayEmpty
-                      >
-                        <MenuItem value="" disabled>
-                          Event Layout Status
-                        </MenuItem>
-                        <MenuItem value="Seated">Seated</MenuItem>
-                        <MenuItem value="Standing">Standing</MenuItem>
-                        <MenuItem value="Seated Standing">Seated & Standing</MenuItem>
-                        <MenuItem value="Run">Run</MenuItem>
-                      </Select>
+
                       <Select
                         name="status"
                         style={selectStyle}

@@ -3,18 +3,36 @@ import { TextField, Button, CircularProgress, Card, CardMedia, CardActions } fro
 import PropTypes from "prop-types";
 import api from "../api";
 
-const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
+const Gallery = ({ eventId, layoutImageUrl }) => {
   const [selectedFiles, setSelectedFiles] = useState([]); // To store selected files
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState(galleryImages || []); // Start with provided gallery images
+  const [images, setImages] = useState([]); // To store fetched images
 
   const inputStyle = { margin: "10px", width: "100%" };
 
-  useEffect(() => {
-    if (galleryImages) {
-      setImages([galleryImages]); // Initialize with `thumbUrl` if provided
+  // Fetch gallery images when the component mounts
+  const fetchImages = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/uploads/event/gallery/${eventId}`);
+      console.log("API Response:", response.data); // Log the full response to debug
+      if (response.status === 200) {
+        // Check if 'images' exists and is an array
+        if (Array.isArray(response.data.images)) {
+          setImages(response.data.images); // Set the fetched images
+        } else {
+          console.warn("Images data is not an array or is missing.");
+          setImages([]); // Fallback to an empty array
+        }
+      } else {
+        console.error("Failed to fetch images", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [galleryImages]);
+  };
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files); // Get all selected files
@@ -34,7 +52,7 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
 
     const requestOptions = {
       headers: {
-        "Content-Type": "multipart/form-data", // Make sure to set the content type for file upload
+        "Content-Type": "multipart/form-data", // Set content type for file upload
       },
     };
 
@@ -45,16 +63,20 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
         formData,
         requestOptions
       );
-      if (!response.ok) {
-        throw new Error(`Failed to upload: ${response.statusText}`);
+      if (response.status === 200) {
+        alert("Images uploaded successfully.");
+        await fetchImages();
+        // Append newly uploaded images to the existing ones
+        setImages((prevImages) => [
+          ...prevImages,
+          ...(Array.isArray(response.data.images) ? response.data.images : []),
+        ]);
+      } else {
+        console.error("Failed to upload images", response.statusText);
       }
-      const result = await response.text();
-      alert("Images uploaded successfully.");
-      console.log(result);
-      // Optionally, update the images state here if the response contains the new images
     } catch (error) {
-      console.error("Error:", error);
-      //alert(`Failed to upload images: ${error.message}`);
+      console.error("Error uploading images:", error);
+      alert("Failed to upload images.");
     } finally {
       setLoading(false);
     }
@@ -62,12 +84,16 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
 
   const handleDeleteImage = async (url) => {
     setLoading(true);
-    const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
+    const fileName = url.split("/").pop(); // Get the file name from the URL
 
     try {
-      await api.delete(`/uploads/event/gallery/${eventId}/${fileName}`);
-      alert("Image deleted successfully.");
-      setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove image locally
+      const response = await api.delete(`/uploads/event/gallery/${eventId}/${fileName}`);
+      if (response.status === 200) {
+        alert("Image deleted successfully.");
+        setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
+      } else {
+        console.error("Failed to delete image", response.statusText);
+      }
     } catch (error) {
       console.error("Error deleting image:", error);
       alert("Failed to delete image.");
@@ -75,6 +101,12 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (eventId) {
+      fetchImages();
+    }
+  }, [eventId]);
 
   return (
     <div>
@@ -103,37 +135,13 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
       {/* Uploaded images list */}
       <div style={{ marginTop: "20px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-          {/* Ensure galleryImages is always used */}
-          {galleryImages &&
-            Array.isArray(galleryImages) &&
-            galleryImages.map((url, index) => (
+          {images.length > 0 ? (
+            images.map((url, index) => (
               <Card key={index} style={{ width: "200px", position: "relative" }}>
                 <CardMedia
                   component="img"
                   height="140"
-                  image={url} // Use each URL in the galleryImages array
-                  alt={`Image ${index + 1}`}
-                />
-                <CardActions style={{ justifyContent: "center" }}>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleDeleteImage(url)} // Pass the URL of the image for deletion
-                    disabled={loading}
-                  >
-                    Delete
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
-          {images
-            .filter((url) => url !== galleryImages) // Avoid duplicating thumbUrl
-            .map((url, index) => (
-              <Card key={index} style={{ width: "200px", position: "relative" }}>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={url} // Use the full URL from the API response
+                  image={url} // Use the image URL
                   alt={`Image ${index + 1}`}
                 />
                 <CardActions style={{ justifyContent: "center" }}>
@@ -147,9 +155,11 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
                   </Button>
                 </CardActions>
               </Card>
-            ))}
+            ))
+          ) : (
+            <p>No images uploaded yet.</p>
+          )}
         </div>
-        {images.length === 0 && !layoutImageUrl && <p>No images uploaded yet.</p>}
       </div>
     </div>
   );
@@ -158,7 +168,6 @@ const Gallery = ({ eventId, layoutImageUrl, galleryImages }) => {
 Gallery.propTypes = {
   eventId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   layoutImageUrl: PropTypes.string, // Accept layoutImageUrl as a prop
-  galleryImages: PropTypes.arrayOf(PropTypes.string), // Expect an array of strings (URLs)
 };
 
 export default Gallery;

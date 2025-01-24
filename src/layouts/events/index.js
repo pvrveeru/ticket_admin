@@ -112,11 +112,11 @@ const Events = () => {
                 <tbody style={{ textAlign: "center" }}>
                   {events.map((event) => (
                     <tr key={event.eventId}>
-                      <td style={tableCellStyle}>{event.eventId}</td>
+                      <td style={tableCellStyle}>{event.uniqueeventId}</td>
                       <td style={tableCellStyle}>
                         {new Date(event.createdAt).toLocaleDateString()}
                       </td>
-                      <td style={tableCellStyle}>{event.categoryId.name}</td>
+                      <td style={tableCellStyle}>{event.categoryId?.name || "N/A"}</td>
                       <td style={tableCellStyle}>{event.title}</td>
                       <td style={tableCellStyle}>
                         {new Date(event.eventDate).toLocaleDateString()}
@@ -141,10 +141,10 @@ const Events = () => {
               </table>
               <TablePagination
                 component="div"
-                count={totalCount} // Use totalCount for pagination
+                count={totalCount}
                 page={page}
                 onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
+                rowsPerPage={rowsPerPage || 10} // Ensure rowsPerPage is valid
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
             </TableContainer>
