@@ -43,7 +43,7 @@ function EventRegistration() {
   const [rows, setRows] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState("");
   const [events, setEvents] = useState([]);
@@ -54,7 +54,7 @@ function EventRegistration() {
     const fetchEvents = async () => {
       try {
         const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=10&offset=0"
+          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
         );
         console.log("Full API Response:", response.data);
 

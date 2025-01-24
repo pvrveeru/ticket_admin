@@ -44,7 +44,7 @@ const AddEvents = () => {
   const [formData, setFormData] = useState({
     categoryId: "",
     title: "",
-    uniqueeventId: "",
+    uniqueEventId: "",
     startDate: "",
     endDate: "",
     eventDate: "",
@@ -155,7 +155,7 @@ const AddEvents = () => {
           setFormData({
             categoryId: data.category?.categoryId || "", // Set the category name here
             title: data.title || "",
-            uniqueeventId: data.uniqueeventId || "",
+            uniqueEventId: data.uniqueEventId || "",
             stage: data.stage || "",
             layoutStatus: data.layoutStatus || "",
             musicType: data.musicType || "",
@@ -316,10 +316,10 @@ const AddEvents = () => {
                         onChange={handleInputChange}
                       />
                       <TextField
-                        name="uniqueeventId"
+                        name="uniqueEventId"
                         label="Unique event ID"
                         style={inputStyle}
-                        value={formData.uniqueeventId}
+                        value={formData.uniqueEventId}
                         onChange={handleInputChange}
                       />
                       <h3>Event Date</h3>

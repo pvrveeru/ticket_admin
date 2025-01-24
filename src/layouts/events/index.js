@@ -112,7 +112,7 @@ const Events = () => {
                 <tbody style={{ textAlign: "center" }}>
                   {events.map((event) => (
                     <tr key={event.eventId}>
-                      <td style={tableCellStyle}>{event.uniqueeventId}</td>
+                      <td style={tableCellStyle}>{event.uniqueEventId}</td>
                       <td style={tableCellStyle}>
                         {new Date(event.createdAt).toLocaleDateString()}
                       </td>
