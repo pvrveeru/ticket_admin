@@ -76,11 +76,7 @@ const HomeBanners = () => {
 
     setLoading(true);
     try {
-      const response = await api.post(
-        `/uploads/homebanners/`,
-        formData,
-        requestOptions
-      );
+      const response = await api.post(`/uploads/homebanners/`, formData, requestOptions);
       if (response.status === 200) {
         alert("Images uploaded successfully.");
         await fetchImages();
