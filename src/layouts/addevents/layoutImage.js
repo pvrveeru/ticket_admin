@@ -78,11 +78,15 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
   const handleDeleteImage = async (url) => {
     setLoading(true);
     const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
-
     try {
-      await api.delete(`/uploads/event/layout/${eventId}`);
-      alert("Image deleted successfully.");
-      fetchImages(); // Refresh the images list after deleting
+      const response = await api.delete(`/uploads/event/layout/${eventId}`);
+      if (response.status === 200) {
+        alert("Image deleted successfully.");
+        await fetchImages();
+        setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
+      } else {
+        console.error("Failed to delete image", response.statusText);
+      }
     } catch (error) {
       console.error("Error deleting image:", error);
       alert("Failed to delete image.");

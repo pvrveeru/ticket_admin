@@ -103,14 +103,13 @@ const AddEvents = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-    console.log("vee", formData.categoryId);
-    const eventData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      eventData.append(key, value);
-    });
+    // const eventData = new FormData();
+    // Object.entries(formData).forEach(([key, value]) => {
+    //   eventData.append(key, value);
+    // });
 
     try {
-      const response = await api.post("/events", eventData);
+      const response = await api.post("/events", formData);
       alert("Event created successfully");
       fetchEventData();
     } catch (error) {
@@ -239,7 +238,7 @@ const AddEvents = () => {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3} px={2}>
-                <Accordion style={{ border: "1px solid #ddd" }}>
+                <Accordion style={{ border: "1px solid #ddd" }} defaultExpanded>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>Event Details</Typography>
                   </AccordionSummary>

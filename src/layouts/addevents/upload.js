@@ -57,7 +57,11 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
 
     setLoading(true);
     try {
-      const response = await api.post(`/uploads/event/layout/${eventId}`, formData, requestOptions);
+      const response = await api.post(
+        `/uploads/event/thumbnail/${eventId}`,
+        formData,
+        requestOptions
+      );
       if (response.status === 200) {
         alert("Images uploaded successfully.");
         await fetchImages();
@@ -80,11 +84,15 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
   const handleDeleteImage = async (url) => {
     setLoading(true);
     const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
-
     try {
-      //await api.delete(`/uploads/event/thumbnail/${eventId}/${fileName}`);
-      await api.delete(`/uploads/event/thumbnail/${eventId}`);
-      alert("Image deleted successfully.");
+      const response = await api.delete(`/uploads/event/thumbnail/${eventId}`);
+      if (response.status === 200) {
+        alert("Image deleted successfully.");
+        await fetchImages();
+        setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
+      } else {
+        console.error("Failed to delete image", response.statusText);
+      }
     } catch (error) {
       console.error("Error deleting image:", error);
       alert("Failed to delete image.");

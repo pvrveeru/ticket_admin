@@ -32,7 +32,7 @@ const HomeBanners = () => {
   const fetchImages = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/uploads/event/homebanners/${eventId}`);
+      const response = await api.get(`/uploads/homebanners/`);
       console.log("API Response:", response.data); // Log the full response to debug
       if (response.status === 200) {
         // Check if 'images' exists and is an array
@@ -77,7 +77,7 @@ const HomeBanners = () => {
     setLoading(true);
     try {
       const response = await api.post(
-        `/uploads/event/gallery/${eventId}`,
+        `/uploads/homebanners/`,
         formData,
         requestOptions
       );
@@ -105,7 +105,7 @@ const HomeBanners = () => {
     const fileName = url.split("/").pop(); // Get the file name from the URL
 
     try {
-      const response = await api.delete(`/uploads/event/homebanners/${eventId}/${fileName}`);
+      const response = await api.delete(`/uploads/homebanners//${fileName}`);
       if (response.status === 200) {
         alert("Image deleted successfully.");
         setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally

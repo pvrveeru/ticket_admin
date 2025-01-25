@@ -90,6 +90,7 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
       const response = await api.delete(`/uploads/event/gallery/${eventId}/${fileName}`);
       if (response.status === 200) {
         alert("Image deleted successfully.");
+        await fetchImages();
         setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
       } else {
         console.error("Failed to delete image", response.statusText);
