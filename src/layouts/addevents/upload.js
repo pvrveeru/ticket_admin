@@ -136,7 +136,10 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
           {/* Ensure thumbUrl is always used */}
           {thumbUrl && (
-            <Card key="thumbUrl" style={{ width: "200px", position: "relative" }}>
+            <Card
+              key="thumbUrl"
+              style={{ width: "200px", position: "relative", marginBottom: "20px" }}
+            >
               <CardMedia
                 component="img"
                 height="140"

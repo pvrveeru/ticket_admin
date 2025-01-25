@@ -152,7 +152,7 @@ const AddEvents = () => {
           const data = response.data.data;
           console.log(data);
           setFormData({
-            categoryId: data.category?.categoryId || "", // Set the category name here
+            categoryId: data.categoryId?.categoryId || "", // Set the category name here
             title: data.title || "",
             uniqueEventId: data.uniqueEventId || "",
             stage: data.stage || "",
@@ -373,7 +373,7 @@ const AddEvents = () => {
                       <Select
                         name="stage"
                         style={selectStyle}
-                        //value={formData.stage}
+                        value={formData.stage}
                         onChange={handleInputChange}
                         displayEmpty
                       >

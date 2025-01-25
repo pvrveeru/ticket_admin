@@ -138,7 +138,10 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
           {images.length > 0 ? (
             images.map((url, index) => (
-              <Card key={index} style={{ width: "200px", position: "relative" }}>
+              <Card
+                key={index}
+                style={{ width: "200px", position: "relative", marginBottom: "20px" }}
+              >
                 <CardMedia
                   component="img"
                   height="140"

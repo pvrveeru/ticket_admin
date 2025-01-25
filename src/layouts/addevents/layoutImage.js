@@ -130,7 +130,10 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
           {/* Ensure thumbUrl is always used */}
           {layoutImageUrl && (
-            <Card key="layoutImageUrl" style={{ width: "200px", position: "relative" }}>
+            <Card
+              key="layoutImageUrl"
+              style={{ width: "200px", position: "relative", marginBottom: "20px" }}
+            >
               <CardMedia
                 component="img"
                 height="140"

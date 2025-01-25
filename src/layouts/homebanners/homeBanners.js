@@ -32,7 +32,7 @@ const HomeBanners = () => {
   const fetchImages = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/uploads/homebanners/`);
+      const response = await api.get(`/uploads/bannerImages`);
       console.log("API Response:", response.data); // Log the full response to debug
       if (response.status === 200) {
         // Check if 'images' exists and is an array
@@ -76,7 +76,7 @@ const HomeBanners = () => {
 
     setLoading(true);
     try {
-      const response = await api.post(`/uploads/homebanners/`, formData, requestOptions);
+      const response = await api.post(`/uploads/bannerImages`, formData, requestOptions);
       if (response.status === 200) {
         alert("Images uploaded successfully.");
         await fetchImages();
@@ -101,7 +101,7 @@ const HomeBanners = () => {
     const fileName = url.split("/").pop(); // Get the file name from the URL
 
     try {
-      const response = await api.delete(`/uploads/homebanners//${fileName}`);
+      const response = await api.delete(`/uploads/bannerImages/${fileName}`);
       if (response.status === 200) {
         alert("Image deleted successfully.");
         setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
@@ -115,6 +115,10 @@ const HomeBanners = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -172,7 +176,10 @@ const HomeBanners = () => {
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
                     {images.length > 0 ? (
                       images.map((url, index) => (
-                        <Card key={index} style={{ width: "200px", position: "relative" }}>
+                        <Card
+                          key={index}
+                          style={{ width: "200px", position: "relative", marginBottom: "20px" }}
+                        >
                           <CardMedia
                             component="img"
                             height="140"
