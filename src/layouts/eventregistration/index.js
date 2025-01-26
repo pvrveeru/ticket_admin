@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TablePagination } from "@mui/material";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -43,12 +43,12 @@ function EventRegistration() {
   const [rows, setRows] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState("");
   const [events, setEvents] = useState([]);
   const [totalBookings, setTotalBookings] = useState(0); // Added to track total bookings
   const [loading, setLoading] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Default rows per page
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -99,6 +99,15 @@ function EventRegistration() {
     setPage(0); // Reset to the first page
     fetchBookings();
   }, 300); // Debounce search requests
+
+  useEffect(() => {
+    fetchBookings();
+  }, [page, rowsPerPage]);
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page
+  };
 
   return (
     <DashboardLayout>
@@ -169,99 +178,104 @@ function EventRegistration() {
                         style={{ borderRadius: "0px", boxShadow: "none" }}
                       >
                         {rows?.length > 0 ? (
-                          <table
-                            style={{
-                              width: "100%",
-                              borderCollapse: "collapse",
-                              fontSize: "16px",
-                            }}
-                          >
-                            <thead style={{ background: "#efefef", fontSize: "14px" }}>
-                              <tr>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>Name</th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Phone Number
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Email Id
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Name
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Event Date
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>Venue</th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Payment Date
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Payment Amount
-                                </th>
-                                <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                  Transaction Id
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {rows.map((row) => (
-                                <tr key={row.bookingId}>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.bookingId}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.contactPersonFirstName} {row.contactPersonLastName}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.contactPersonPhone}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.contactPersonEmail}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.event.title}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.event.eventDate}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.event.location}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.bookingDate}
-                                  </td>
-                                  <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {row.paymentStatus}
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid #ddd",
-                                      padding: "8px",
-                                      cursor: "pointer",
-                                      color: "blue",
-                                    }}
-                                    onClick={() => handleOpenDialog(row)}
-                                  >
-                                    {row.transactionId}
-                                  </td>
+                          <>
+                            <table
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                                fontSize: "16px",
+                              }}
+                            >
+                              <thead style={{ background: "#efefef", fontSize: "14px" }}>
+                                <tr>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>Name</th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Phone Number
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Email Id
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Name
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Date
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Venue
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Payment Date
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Payment Amount
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Transaction Id
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {rows.map((row) => (
+                                  <tr key={row.bookingId}>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.bookingId}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.contactPersonFirstName} {row.contactPersonLastName}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.contactPersonPhone}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.contactPersonEmail}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.event.title}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.event.eventDate}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.event.location}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.bookingDate}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {row.paymentStatus}
+                                    </td>
+                                    <td
+                                      style={{
+                                        border: "1px solid #ddd",
+                                        padding: "8px",
+                                        cursor: "pointer",
+                                        color: "blue",
+                                      }}
+                                      onClick={() => handleOpenDialog(row)}
+                                    >
+                                      {row.transactionId}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            <TablePagination
+                              component="div"
+                              count={totalBookings} // Total number of bookings from API
+                              page={page}
+                              onPageChange={(event, newPage) => setPage(newPage)}
+                              rowsPerPage={rowsPerPage}
+                              onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                          </>
                         ) : (
                           <p style={{ textAlign: "center", margin: "20px 0" }}>
                             No Event Registration data available
                           </p>
                         )}
                       </TableContainer>
-                    </MDBox>
-                    <MDBox mt={2} mb={2} display="flex" justifyContent="center">
-                      <Pagination
-                        count={Math.ceil(totalBookings / rowsPerPage)} // Updated pagination logic
-                        page={page + 1}
-                        onChange={(_, value) => setPage(value - 1)} // Set page properly
-                      />
                     </MDBox>
                   </>
                 </MDBox>
