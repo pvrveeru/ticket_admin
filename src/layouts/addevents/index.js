@@ -57,7 +57,7 @@ const AddEvents = () => {
     language: "",
     description: "",
     brief: "",
-    noOfTickets: "",
+    maxTicketAllowed: "",
     status: "",
     stage: "",
     layoutStatus: "",
@@ -170,7 +170,7 @@ const AddEvents = () => {
             language: data.language || "",
             description: data.description || "",
             brief: data.brief || "",
-            noOfTickets: data.noOfTickets || "",
+            maxTicketAllowed: data.maxTicketAllowed || "",
             status: data.status || "",
             isPopular: data.isPopular || false,
             isFeatured: data.isFeatured || false,
@@ -299,7 +299,7 @@ const AddEvents = () => {
                         {eventTypes && Array.isArray(eventTypes) && eventTypes.length > 0 ? (
                           eventTypes.map((category) => (
                             <MenuItem key={category.categoryId} value={category.categoryId}>
-                              {category.name}
+                              {category.categoryName}
                             </MenuItem>
                           ))
                         ) : (
@@ -417,10 +417,10 @@ const AddEvents = () => {
                       </Select>
 
                       <TextField
-                        name="noOfTickets"
+                        name="maxTicketAllowed"
                         label="No Tickets"
                         style={inputStyle}
-                        value={formData.noOfTickets}
+                        value={formData.maxTicketAllowed}
                         onChange={handleInputChange}
                       />
 

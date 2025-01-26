@@ -48,7 +48,7 @@ const Categories = () => {
   const handleOpenDialog = (category = null) => {
     setEditingCategory(category);
     setFormData({
-      categories: category?.name || "",
+      categoryName: category?.categoryName || "",
       uniqueCategoryId: category?.uniqueCategoryId || "",
     });
     setIsDialogOpen(true);
@@ -162,6 +162,7 @@ const Categories = () => {
                         <tr>
                           <th style={tableCellStyle}>ID</th>
                           <th style={tableCellStyle}>Categories</th>
+                          <th style={tableCellStyle}>Create Date</th>
                           <th style={tableCellStyle}>Action</th>
                         </tr>
                       </thead>
@@ -169,7 +170,10 @@ const Categories = () => {
                         {categories.map((category) => (
                           <tr key={category.categoryId}>
                             <td style={tableCellStyle}>{category.uniqueCategoryId}</td>
-                            <td style={tableCellStyle}>{category.name}</td>
+                            <td style={tableCellStyle}>{category.categoryName}</td>
+                            <td style={tableCellStyle}>
+                              {new Date(category.createdAt).toLocaleDateString()}
+                            </td>
                             <td style={tableCellStyle}>
                               <MDButton
                                 style={{ marginRight: "10px" }}
@@ -216,11 +220,11 @@ const Categories = () => {
                       onChange={handleFormChange}
                     />
                     <TextField
-                      name="categories"
+                      name="categoryName"
                       label="Category Name"
                       fullWidth
                       margin="normal"
-                      value={formData.categories}
+                      value={formData.categoryName}
                       onChange={handleFormChange}
                     />
                   </DialogContent>

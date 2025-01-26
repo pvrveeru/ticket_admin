@@ -101,8 +101,9 @@ const Events = () => {
                   <tr>
                     <th style={tableCellStyle}>ID</th>
                     <th style={tableCellStyle}>Create Date</th>
+                    <th style={tableCellStyle}>Category Name</th>
+                    <th style={tableCellStyle}>Event Name</th>
                     <th style={tableCellStyle}>Event Type</th>
-                    <th style={tableCellStyle}>Event</th>
                     <th style={tableCellStyle}>Event Date</th>
                     <th style={tableCellStyle}>Location</th>
                     <th style={tableCellStyle}>Tickets</th>
@@ -116,13 +117,14 @@ const Events = () => {
                       <td style={tableCellStyle}>
                         {new Date(event.createdAt).toLocaleDateString()}
                       </td>
-                      <td style={tableCellStyle}>{event.categoryId?.name || "N/A"}</td>
+                      <td style={tableCellStyle}>{event.categoryId?.categoryName || "N/A"}</td>
                       <td style={tableCellStyle}>{event.title}</td>
+                      <td style={tableCellStyle}>{event.musicType}</td>
                       <td style={tableCellStyle}>
                         {new Date(event.eventDate).toLocaleDateString()}
                       </td>
                       <td style={tableCellStyle}>{event.location}</td>
-                      <td style={tableCellStyle}>{event.noOfTickets}</td>
+                      <td style={tableCellStyle}>{event.maxTicketAllowed}</td>
                       <td style={tableCellStyle}>
                         <MDButton
                           style={{ marginRight: "10px" }}

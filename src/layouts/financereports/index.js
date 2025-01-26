@@ -314,7 +314,7 @@ function FinanceReports() {
                                       {new Date(event.eventDate).toLocaleDateString()}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.noOfTickets}
+                                      {event.maxTicketAllowed}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {event.eventEnrollments}
