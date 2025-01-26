@@ -293,6 +293,9 @@ function EventsReports() {
                                     Event Tickets
                                   </th>
                                   <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Seating Details
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
                                     Event Enrolments
                                   </th>
                                   <th style={{ border: "1px solid #ddd", padding: "8px" }}>
@@ -314,6 +317,20 @@ function EventsReports() {
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {event.maxTicketAllowed}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {Array.isArray(event.seatingDetails) ? (
+                                        <ul style={{ listStyle: "none" }}>
+                                          {event.seatingDetails.map((detail, index) => (
+                                            <li key={index}>
+                                              {detail.zoneName} - {detail.seatsAvailable} /{" "}
+                                              {detail.capacity} seats (${detail.price})
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        "N/A"
+                                      )}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {event.eventEnrollments}
