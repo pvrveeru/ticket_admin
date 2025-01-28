@@ -134,38 +134,16 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
       {/* Uploaded images list */}
       <div style={{ marginTop: "20px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-          {/* Ensure thumbUrl is always used */}
-          {thumbUrl && (
-            <Card
-              key="thumbUrl"
-              style={{ width: "200px", position: "relative", marginBottom: "20px" }}
-            >
-              <CardMedia
-                component="img"
-                height="140"
-                image={thumbUrl} // Use thumbUrl as the primary image
-                alt="Thumbnail"
-              />
-              <CardActions style={{ justifyContent: "center" }}>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleDeleteImage(thumbUrl)} // Use thumbUrl for deletion
-                  disabled={loading}
-                >
-                  Delete
-                </Button>
-              </CardActions>
-            </Card>
-          )}
-          {images
-            .filter((url) => url !== thumbUrl) // Avoid duplicating thumbUrl
-            .map((url, index) => (
-              <Card key={index} style={{ width: "200px", position: "relative" }}>
+          {images.length > 0 ? (
+            images.map((url, index) => (
+              <Card
+                key={index}
+                style={{ width: "200px", position: "relative", marginBottom: "20px" }}
+              >
                 <CardMedia
                   component="img"
                   height="140"
-                  image={url} // Use the full URL from the API response
+                  image={url} // Use the image URL
                   alt={`Image ${index + 1}`}
                 />
                 <CardActions style={{ justifyContent: "center" }}>
@@ -179,9 +157,11 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
                   </Button>
                 </CardActions>
               </Card>
-            ))}
+            ))
+          ) : (
+            <p>No images uploaded yet.</p>
+          )}
         </div>
-        {images.length === 0 && !thumbUrl && <p>No images uploaded yet.</p>}
       </div>
       <LayoutImage eventId={eventId} thumbUrl={thumbUrl} layoutImageUrl={layoutImageUrl} />
       <Gallery
