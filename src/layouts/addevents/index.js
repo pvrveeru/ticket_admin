@@ -29,6 +29,7 @@ import "../styles.css"; // Custom styles
 import api from "../api";
 import Seating from "./seating";
 import Upload from "./upload";
+import Payments from "./payments";
 
 const AddEvents = () => {
   const navigate = useNavigate();
@@ -126,14 +127,14 @@ const AddEvents = () => {
         const response = await api.get("/event-category");
         console.log("Event types data:", response.data); // Check the format of the response
 
-        // Ensure the data is an array before setting it
-        if (Array.isArray(response.data)) {
-          setEventTypes(response.data);
-        } else if (response.data && Array.isArray(response.data.data)) {
-          setEventTypes(response.data.data); // Assuming the event types are inside a `data` field
+        // Extract categories from the nested response
+        const categories = response.data?.data?.categories;
+
+        if (Array.isArray(categories)) {
+          setEventTypes(categories); // Set categories if it's a valid array
         } else {
           console.error("Event types data is not an array:", response.data);
-          setEventTypes([]); // Fallback to empty array if the data is not valid
+          setEventTypes([]); // Fallback to an empty array if invalid
         }
       } catch (error) {
         console.error("Error fetching event types:", error);
@@ -639,6 +640,18 @@ const AddEvents = () => {
                         layoutImageUrl={layoutImageUrl}
                         galleryImages={galleryImages}
                       />
+                    </AccordionDetails>
+                  </Accordion>
+                </MDBox>
+              )}
+              {eventId && (
+                <MDBox pt={3} px={2}>
+                  <Accordion style={{ border: "1px solid #ddd" }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography>Event Payments</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Payments eventId={eventId} />
                     </AccordionDetails>
                   </Accordion>
                 </MDBox>

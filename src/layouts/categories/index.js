@@ -35,8 +35,10 @@ const Categories = () => {
       try {
         setLoading(true);
         const response = await api.get("/event-category");
-        setCategories(response.data.data || []);
+        console.log(response.data.data.categories); // Accessing the nested `categories` array
+        setCategories(response.data.data.categories || []); // Use the correct array
       } catch (err) {
+        console.error(err); // Log any errors
         setError("Failed to load categories. Please try again later.");
       } finally {
         setLoading(false);
@@ -167,36 +169,37 @@ const Categories = () => {
                         </tr>
                       </thead>
                       <tbody style={{ textAlign: "center" }}>
-                        {categories.map((category) => (
-                          <tr key={category.categoryId}>
-                            <td style={tableCellStyle}>{category.uniqueCategoryId}</td>
-                            <td style={tableCellStyle}>{category.categoryName}</td>
-                            <td style={tableCellStyle}>
-                              {new Date(category.createdAt).toLocaleDateString()}
-                            </td>
-                            <td style={tableCellStyle}>
-                              <MDButton
-                                style={{ marginRight: "10px" }}
-                                variant="gradient"
-                                color="info"
-                                onClick={() => handleOpenDialog(category)}
-                              >
-                                <CreateIcon />
-                              </MDButton>
-                              <MDButton
-                                style={{ marginLeft: "10px" }}
-                                variant="gradient"
-                                color="error"
-                                onClick={() => {
-                                  setIsDeleteConfirmOpen(true);
-                                  setCategoryToDelete(category);
-                                }}
-                              >
-                                <DeleteIcon />
-                              </MDButton>
-                            </td>
-                          </tr>
-                        ))}
+                        {Array.isArray(categories) &&
+                          categories.map((category) => (
+                            <tr key={category.categoryId}>
+                              <td style={tableCellStyle}>{category.uniqueCategoryId}</td>
+                              <td style={tableCellStyle}>{category.categoryName}</td>
+                              <td style={tableCellStyle}>
+                                {new Date(category.createdAt).toLocaleDateString()}
+                              </td>
+                              <td style={tableCellStyle}>
+                                <MDButton
+                                  style={{ marginRight: "10px" }}
+                                  variant="gradient"
+                                  color="info"
+                                  onClick={() => handleOpenDialog(category)}
+                                >
+                                  <CreateIcon />
+                                </MDButton>
+                                <MDButton
+                                  style={{ marginLeft: "10px" }}
+                                  variant="gradient"
+                                  color="error"
+                                  onClick={() => {
+                                    setIsDeleteConfirmOpen(true);
+                                    setCategoryToDelete(category);
+                                  }}
+                                >
+                                  <DeleteIcon />
+                                </MDButton>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </TableContainer>

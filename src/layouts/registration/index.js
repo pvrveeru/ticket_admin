@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TablePagination } from "@mui/material";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -20,6 +21,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MDButton from "components/MDButton";
+import api from "../api";
 
 function Registration() {
   const [startDate, setStartDate] = useState(dayjs());
@@ -29,6 +31,7 @@ function Registration() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0); // Added to track total bookings
 
   const apiUrl = "http://64.227.157.67:5001/api/v1/users";
 
@@ -41,9 +44,10 @@ function Registration() {
           endDate: endDate.format("YYYY-MM-DD"),
         },
       });
-      if (response.data.status === "success") {
-        setRows(response.data.data);
-      }
+      const users = response.data.data;
+      const totalNoOfRecords = response.data.data.length;
+      setRows(users);
+      setTotalUsers(totalNoOfRecords); // Update total bookings count
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -63,13 +67,23 @@ function Registration() {
 
   // Filtered data for search and pagination
   const filteredRows = rows
-    .filter(
-      (row) =>
-        row.firstName.toLowerCase().includes(searchQuery) ||
-        row.lastName.toLowerCase().includes(searchQuery) ||
-        row.email.toLowerCase().includes(searchQuery)
-    )
+    .filter((row) => {
+      const firstName = row.firstName || "";
+      const lastName = row.lastName || "";
+      const email = row.email || "";
+
+      return (
+        firstName.toLowerCase().includes(searchQuery) ||
+        lastName.toLowerCase().includes(searchQuery) ||
+        email.toLowerCase().includes(searchQuery)
+      );
+    })
     .slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page
+  };
 
   return (
     <DashboardLayout>
@@ -144,7 +158,7 @@ function Registration() {
                           <Select
                             labelId="rows-per-page-label"
                             value={rowsPerPage}
-                            onChange={handleRowsPerPageChange}
+                            onChange={handleChangeRowsPerPage}
                             label="Rows per page"
                             style={{ height: "36px", fontSize: "16px" }}
                           >
@@ -161,71 +175,77 @@ function Registration() {
                           style={{ borderRadius: "0px", boxShadow: "none" }}
                         >
                           {filteredRows?.length > 0 ? (
-                            <table
-                              style={{
-                                width: "100%",
-                                borderCollapse: "collapse",
-                                fontSize: "16px",
-                              }}
-                            >
-                              <thead style={{ background: "#efefef", fontSize: "14px" }}>
-                                <tr>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    First Name
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Last Name
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Phone Number
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Email
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Registration Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody style={{ fontSize: "15px" }}>
-                                {filteredRows.map((row) => (
-                                  <tr key={row.userId}>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.userId}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.firstName}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.lastName}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.phoneNumber}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.email}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {dayjs(row.createdAt).format("DD-MM-YYYY")}
-                                    </td>
+                            <>
+                              <table
+                                style={{
+                                  width: "100%",
+                                  borderCollapse: "collapse",
+                                  fontSize: "16px",
+                                }}
+                              >
+                                <thead style={{ background: "#efefef", fontSize: "14px" }}>
+                                  <tr>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      First Name
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Last Name
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Phone Number
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Email
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Registration Date
+                                    </th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody style={{ fontSize: "15px" }}>
+                                  {filteredRows.map((row) => (
+                                    <tr key={row.userId}>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.userId || "N/A"}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.firstName || "N/A"}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.lastName || "N/A"}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.phoneNumber || "N/A"}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.email || "N/A"}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {row.createdAt
+                                          ? dayjs(row.createdAt).format("DD-MM-YYYY")
+                                          : "N/A"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <TablePagination
+                                rowsPerPageOptions={[10, 25, 50, 100]}
+                                component="div"
+                                count={totalUsers}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                onPageChange={(row, newPage) => setPage(newPage)}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                              />
+                            </>
                           ) : (
                             <p style={{ textAlign: "center", margin: "20px 0" }}>
                               No Registration data available
                             </p>
                           )}
                         </TableContainer>
-                      </MDBox>
-                      <MDBox mt={2} mb={2} display="flex" justifyContent="center">
-                        <Pagination
-                          count={Math.ceil(rows.length / rowsPerPage)}
-                          page={page + 1}
-                          onChange={handlePageChange}
-                        />
                       </MDBox>
                     </>
                   )}

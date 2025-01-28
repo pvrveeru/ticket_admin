@@ -23,7 +23,14 @@ const Seating = ({ eventId }) => {
   const fetchZoneData = async () => {
     try {
       const response = await api.get(`/seating-options?eventId=${eventId}`);
-      setZoneList(response.data?.data || []);
+
+      // Extract seating options from the response
+      const seatingOptions = Array.isArray(response.data?.data?.seatingOptions)
+        ? response.data.data.seatingOptions
+        : [];
+      setZoneList(seatingOptions);
+
+      console.log("Fetched zones:", seatingOptions);
     } catch (error) {
       console.error("Error fetching zone data:", error);
       alert("Failed to fetch zone data");

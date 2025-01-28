@@ -56,7 +56,7 @@ function EventRegistration() {
         const response = await api.get(
           "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
         );
-        console.log("Full API Response:", response.data);
+        console.log("Full API Response:", response.data.data);
 
         const eventData = response.data.data;
         if (Array.isArray(eventData)) {
@@ -86,14 +86,19 @@ function EventRegistration() {
           page * rowsPerPage
         }`
       );
-      setRows(response.data.data);
-      setTotalBookings(response.data.total); // Assuming API returns total bookings
+      // Extracting bookings and total records
+      const bookings = response.data.data.bookings;
+      const totalNoOfRecords = response.data.data.totalNoOfRecords;
+
+      setRows(bookings); // Update rows state with the bookings array
+      setTotalBookings(totalNoOfRecords); // Update total bookings count
     } catch (error) {
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
     }
   };
+  const handleRowsPerPageChange = (e) => setRowsPerPage(e.target.value);
 
   const handleSearch = debounce(() => {
     setPage(0); // Reset to the first page
@@ -172,6 +177,23 @@ function EventRegistration() {
                 </Card>
                 <MDBox mt={3}>
                   <>
+                    <MDBox mt={2} mb={2}>
+                      <FormControl variant="outlined" sx={{ minWidth: 120 }}>
+                        <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                        <Select
+                          labelId="rows-per-page-label"
+                          value={rowsPerPage}
+                          onChange={handleChangeRowsPerPage}
+                          label="Rows per page"
+                          style={{ height: "36px", fontSize: "16px" }}
+                        >
+                          <MenuItem value={10}>10</MenuItem>
+                          <MenuItem value={25}>25</MenuItem>
+                          <MenuItem value={50}>50</MenuItem>
+                          <MenuItem value={100}>100</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </MDBox>
                     <MDBox mt={2} display="flex" justifyContent="center">
                       <TableContainer
                         component={Paper}
@@ -235,13 +257,13 @@ function EventRegistration() {
                                       {row.event.title}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.event.eventDate}
+                                      {dayjs(row.event.event_date).format("DD-MM-YYYY HH:mm:ss")}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {row.event.location}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.bookingDate}
+                                      {dayjs(row.bookingDate).format("DD-MM-YYYY HH:mm:ss")}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {row.paymentStatus}
@@ -262,11 +284,12 @@ function EventRegistration() {
                               </tbody>
                             </table>
                             <TablePagination
+                              rowsPerPageOptions={[10, 25, 50, 100]}
                               component="div"
-                              count={totalBookings} // Total number of bookings from API
+                              count={totalBookings}
+                              rowsPerPage={rowsPerPage}
                               page={page}
                               onPageChange={(event, newPage) => setPage(newPage)}
-                              rowsPerPage={rowsPerPage}
                               onRowsPerPageChange={handleChangeRowsPerPage}
                             />
                           </>

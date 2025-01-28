@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TablePagination } from "@mui/material";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -50,6 +51,7 @@ function EventsReports() {
   const [isEventIdDisabled, setIsEventIdDisabled] = useState(false);
   const [isDateDisabled, setIsDateDisabled] = useState(false);
   const [tableData, setTableData] = useState([]);
+  const [totalRepots, setTotalReports] = useState(0); // Added to track total bookings
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -106,6 +108,7 @@ function EventsReports() {
       setIsEventIdDisabled(false);
     }
   };
+  const handleRowsPerPageChange = (e) => setRowsPerPage(e.target.value);
 
   // Handle search button click
   const handleSearch = async () => {
@@ -115,8 +118,11 @@ function EventsReports() {
         const response = await api.get(
           `/events/reports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
         );
-        console.log("Search by Event ID Response:", response.data);
-        setTableData(response.data.data); // Update table data
+        console.log("Search by Event ID Response:", response.data.data);
+        const events = response.data.data.events;
+        const totalNoOfRecords = response.data.data.totalNoOfRecords;
+        setTableData(events); // Update table data
+        setTotalReports(totalNoOfRecords); // Update total bookings count
       } catch (error) {
         console.error("Error fetching reports by Event ID:", error);
       }
@@ -130,7 +136,8 @@ function EventsReports() {
           `/events/reports?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
         );
         console.log("Search by Date Range Response:", response.data);
-        setTableData(response.data.data); // Update table data
+        setTableData(response.data.data.events); // Update table data
+        setTotalReports(totalNoOfRecords); // Update total bookings count
       } catch (error) {
         console.error("Error fetching reports by Date Range:", error);
       }
@@ -147,6 +154,11 @@ function EventsReports() {
     setIsEventIdDisabled();
     setEndDate();
     setStartDate();
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page
   };
 
   return (
@@ -255,6 +267,7 @@ function EventsReports() {
                           <Select
                             labelId="rows-per-page-label"
                             value={rowsPerPage}
+                            onChange={handleChangeRowsPerPage}
                             label="Rows per page"
                             style={{ height: "36px", fontSize: "16px" }}
                           >
@@ -271,86 +284,104 @@ function EventsReports() {
                           style={{ borderRadius: "0px", boxShadow: "none" }}
                         >
                           {tableData?.length > 0 ? (
-                            <table
-                              style={{
-                                width: "100%",
-                                borderCollapse: "collapse",
-                                fontSize: "16px",
-                              }}
-                            >
-                              <thead style={{ background: "#efefef", fontSize: "14px" }}>
-                                <tr>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event ID
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event Name
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event Location
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event Tickets
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Seating Details
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event Enrolments
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Event Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody style={{ fontSize: "15px" }}>
-                                {tableData.map((event) => (
-                                  <tr key={event.eventId}>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.eventId}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.title}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.location}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.maxTicketAllowed}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {Array.isArray(event.seatingDetails) ? (
-                                        <ul style={{ listStyle: "none" }}>
-                                          {event.seatingDetails.map((detail, index) => (
-                                            <li key={index}>
-                                              {detail.zoneName} - {detail.seatsAvailable} /{" "}
-                                              {detail.capacity} seats (${detail.price})
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      ) : (
-                                        "N/A"
-                                      )}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.eventEnrollments}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {new Date(event.eventDate).toLocaleDateString()}
-                                    </td>
+                            <>
+                              <table
+                                style={{
+                                  width: "100%",
+                                  borderCollapse: "collapse",
+                                  fontSize: "16px",
+                                }}
+                              >
+                                <thead style={{ background: "#efefef", fontSize: "14px" }}>
+                                  <tr>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event ID
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event Name
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event Location
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event Tickets
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Seating Details
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event Enrolments
+                                    </th>
+                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      Event Date
+                                    </th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody style={{ fontSize: "15px" }}>
+                                  {tableData.map((event) => (
+                                    <tr key={event.eventId}>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {event.eventId}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {event.title}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {event.location}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {event.maxTicketAllowed}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {Array.isArray(event.seatingDetails) ? (
+                                          <ul style={{ listStyle: "none" }}>
+                                            {event.seatingDetails.map((detail, index) => (
+                                              <li key={index}>
+                                                {detail.zoneName} - {detail.seatsAvailable} /{" "}
+                                                {detail.capacity} seats (${detail.price})
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        ) : (
+                                          "N/A"
+                                        )}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {Array.isArray(event.seatingDetails) ? (
+                                          <ul style={{ listStyle: "none" }}>
+                                            {event.seatingDetails.map((detail, index) => (
+                                              <li key={index}>
+                                                {detail.zoneName} - {detail.ticketsBooked}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        ) : (
+                                          "N/A"
+                                        )}
+                                      </td>
+                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                        {new Date(event.eventDate).toLocaleDateString()}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <TablePagination
+                                rowsPerPageOptions={[10, 25, 50, 100]}
+                                component="div"
+                                count={totalRepots}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                onPageChange={(event, newPage) => setPage(newPage)}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                              />
+                            </>
                           ) : (
                             <p style={{ textAlign: "center", margin: "20px 0" }}>
                               No event data available
                             </p>
                           )}
                         </TableContainer>
-                      </MDBox>
-                      <MDBox mt={2} mb={2} display="flex" justifyContent="center">
-                        <Pagination count={Math.ceil(rows.length / rowsPerPage)} page={page + 1} />
                       </MDBox>
                     </>
                   </>
