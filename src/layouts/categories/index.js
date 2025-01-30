@@ -31,21 +31,22 @@ const Categories = () => {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/event-category");
-        console.log(response.data.data.categories); // Accessing the nested `categories` array
-        setCategories(response.data.data.categories || []); // Use the correct array
-      } catch (err) {
-        console.error(err); // Log any errors
-        setError("Failed to load categories. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/event-category");
+      console.log(response.data.data.categories);
+      setCategories(response.data.data.categories || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load categories. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOpenDialog = (category = null) => {
     setEditingCategory(category);
@@ -72,21 +73,21 @@ const Categories = () => {
     try {
       setLoading(true);
       if (editingCategory) {
-        // Update category
         await api.put(`/event-category/${editingCategory.categoryId}`, {
-          name: formData.categories,
+          categoryName: formData.categoryName,
+          uniqueCategoryId: formData.uniqueCategoryId,
         });
       } else {
-        // Add new category
         const response = await api.post("/event-category", {
-          name: formData.categories,
+          categoryName: formData.categoryName,
+          uniqueCategoryId: formData.uniqueCategoryId,
         });
         setCategories([...categories, response.data.data]);
       }
       handleCloseDialog();
-      // Refresh categories
-      const refreshedCategories = await api.get("/event-category");
-      setCategories(refreshedCategories.data.data || []);
+      fetchCategories(); // Fetch updated categories after edit/add
+
+      // **Fetch updated categories after edit or add**
     } catch (err) {
       setError("Failed to submit. Please try again.");
     } finally {
