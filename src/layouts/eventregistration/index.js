@@ -177,23 +177,6 @@ function EventRegistration() {
                 </Card>
                 <MDBox mt={3}>
                   <>
-                    <MDBox mt={2} mb={2}>
-                      <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-                        <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
-                        <Select
-                          labelId="rows-per-page-label"
-                          value={rowsPerPage}
-                          onChange={handleChangeRowsPerPage}
-                          label="Rows per page"
-                          style={{ height: "36px", fontSize: "16px" }}
-                        >
-                          <MenuItem value={10}>10</MenuItem>
-                          <MenuItem value={25}>25</MenuItem>
-                          <MenuItem value={50}>50</MenuItem>
-                          <MenuItem value={100}>100</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </MDBox>
                     <MDBox mt={2} display="flex" justifyContent="center">
                       <TableContainer
                         component={Paper}
@@ -225,9 +208,6 @@ function EventRegistration() {
                                     Event Date
                                   </th>
                                   <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    Venue
-                                  </th>
-                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
                                     Payment Date
                                   </th>
                                   <th style={{ border: "1px solid #ddd", padding: "8px" }}>
@@ -257,10 +237,7 @@ function EventRegistration() {
                                       {row.event.title}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {dayjs(row.event.event_date).format("DD-MM-YYYY HH:mm:ss")}
-                                    </td>
-                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {row.event.location}
+                                      {dayjs(row.event.event_date).format("DD-MM-YYYY")}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {dayjs(row.bookingDate).format("DD-MM-YYYY HH:mm:ss")}
@@ -292,6 +269,28 @@ function EventRegistration() {
                               onPageChange={(event, newPage) => setPage(newPage)}
                               onRowsPerPageChange={handleChangeRowsPerPage}
                             />
+                            <FormControl
+                              variant="outlined"
+                              sx={{
+                                minWidth: 120,
+                                position: "absolute",
+                                marginTop: "-30px",
+                              }}
+                            >
+                              <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                              <Select
+                                labelId="rows-per-page-label"
+                                value={rowsPerPage}
+                                onChange={handleChangeRowsPerPage}
+                                label="Rows per page"
+                                style={{ height: "36px", fontSize: "16px" }}
+                              >
+                                <MenuItem value={10}>10</MenuItem>
+                                <MenuItem value={25}>25</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                <MenuItem value={100}>100</MenuItem>
+                              </Select>
+                            </FormControl>
                           </>
                         ) : (
                           <p style={{ textAlign: "center", margin: "20px 0" }}>

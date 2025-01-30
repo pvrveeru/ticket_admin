@@ -152,23 +152,6 @@ function Registration() {
                     <CircularProgress />
                   ) : (
                     <>
-                      <MDBox mt={2} mb={2}>
-                        <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
-                          <Select
-                            labelId="rows-per-page-label"
-                            value={rowsPerPage}
-                            onChange={handleChangeRowsPerPage}
-                            label="Rows per page"
-                            style={{ height: "36px", fontSize: "16px" }}
-                          >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </MDBox>
                       <MDBox mt={2} display="flex" justifyContent="center">
                         <TableContainer
                           component={Paper}
@@ -190,9 +173,6 @@ function Registration() {
                                       First Name
                                     </th>
                                     <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Last Name
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       Phone Number
                                     </th>
                                     <th style={{ border: "1px solid #ddd", padding: "8px" }}>
@@ -210,10 +190,7 @@ function Registration() {
                                         {row.userId || "N/A"}
                                       </td>
                                       <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {row.firstName || "N/A"}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {row.lastName || "N/A"}
+                                        {row.firstName || "N/A"} {row.lastName || "N/A"}
                                       </td>
                                       <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                         {row.phoneNumber || "N/A"}
@@ -239,6 +216,28 @@ function Registration() {
                                 onPageChange={(row, newPage) => setPage(newPage)}
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                               />
+                              <FormControl
+                                variant="outlined"
+                                sx={{
+                                  minWidth: 120,
+                                  position: "absolute",
+                                  marginTop: "-30px",
+                                }}
+                              >
+                                <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                                <Select
+                                  labelId="rows-per-page-label"
+                                  value={rowsPerPage}
+                                  onChange={handleChangeRowsPerPage}
+                                  label="Rows per page"
+                                  style={{ height: "36px", fontSize: "16px" }}
+                                >
+                                  <MenuItem value={10}>10</MenuItem>
+                                  <MenuItem value={25}>25</MenuItem>
+                                  <MenuItem value={50}>50</MenuItem>
+                                  <MenuItem value={100}>100</MenuItem>
+                                </Select>
+                              </FormControl>
                             </>
                           ) : (
                             <p style={{ textAlign: "center", margin: "20px 0" }}>

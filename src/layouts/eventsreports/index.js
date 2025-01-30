@@ -260,130 +260,133 @@ function EventsReports() {
                 </Card>
                 <MDBox mt={3}>
                   <>
-                    <>
-                      <MDBox mt={2} mb={2}>
-                        <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
-                          <Select
-                            labelId="rows-per-page-label"
-                            value={rowsPerPage}
-                            onChange={handleChangeRowsPerPage}
-                            label="Rows per page"
-                            style={{ height: "36px", fontSize: "16px" }}
-                          >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </MDBox>
-                      <MDBox mt={2} display="flex" justifyContent="center">
-                        <TableContainer
-                          component={Paper}
-                          style={{ borderRadius: "0px", boxShadow: "none" }}
-                        >
-                          {tableData?.length > 0 ? (
-                            <>
-                              <table
-                                style={{
-                                  width: "100%",
-                                  borderCollapse: "collapse",
-                                  fontSize: "16px",
-                                }}
-                              >
-                                <thead style={{ background: "#efefef", fontSize: "14px" }}>
-                                  <tr>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event ID
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event Name
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event Location
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event Tickets
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Seating Details
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event Enrolments
-                                    </th>
-                                    <th style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      Event Date
-                                    </th>
+                    <MDBox mt={2} display="flex" justifyContent="center">
+                      <TableContainer
+                        component={Paper}
+                        style={{ borderRadius: "0px", boxShadow: "none" }}
+                      >
+                        {tableData?.length > 0 ? (
+                          <>
+                            <table
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                                fontSize: "16px",
+                              }}
+                            >
+                              <thead style={{ background: "#efefef", fontSize: "14px" }}>
+                                <tr>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event ID
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Name
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Location
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Tickets
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Seating Details
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Enrolments
+                                  </th>
+                                  <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                    Event Date
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody style={{ fontSize: "15px" }}>
+                                {tableData.map((event) => (
+                                  <tr key={event.eventId}>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.eventId}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.title}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.location}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {event.maxTicketAllowed}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {Array.isArray(event.seatingDetails) ? (
+                                        <ul style={{ listStyle: "none" }}>
+                                          {event.seatingDetails.map((detail, index) => (
+                                            <li key={index}>
+                                              {detail.zoneName} - {detail.seatsAvailable} /{" "}
+                                              {detail.capacity} seats (${detail.price})
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {Array.isArray(event.seatingDetails) ? (
+                                        <ul style={{ listStyle: "none" }}>
+                                          {event.seatingDetails.map((detail, index) => (
+                                            <li key={index}>
+                                              {detail.zoneName} - {detail.ticketsBooked}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </td>
+                                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                                      {new Date(event.eventDate).toLocaleDateString()}
+                                    </td>
                                   </tr>
-                                </thead>
-                                <tbody style={{ fontSize: "15px" }}>
-                                  {tableData.map((event) => (
-                                    <tr key={event.eventId}>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {event.eventId}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {event.title}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {event.location}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {event.maxTicketAllowed}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {Array.isArray(event.seatingDetails) ? (
-                                          <ul style={{ listStyle: "none" }}>
-                                            {event.seatingDetails.map((detail, index) => (
-                                              <li key={index}>
-                                                {detail.zoneName} - {detail.seatsAvailable} /{" "}
-                                                {detail.capacity} seats (${detail.price})
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        ) : (
-                                          "N/A"
-                                        )}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {Array.isArray(event.seatingDetails) ? (
-                                          <ul style={{ listStyle: "none" }}>
-                                            {event.seatingDetails.map((detail, index) => (
-                                              <li key={index}>
-                                                {detail.zoneName} - {detail.ticketsBooked}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        ) : (
-                                          "N/A"
-                                        )}
-                                      </td>
-                                      <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                        {new Date(event.eventDate).toLocaleDateString()}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <TablePagination
-                                rowsPerPageOptions={[10, 25, 50, 100]}
-                                component="div"
-                                count={totalRepots}
-                                rowsPerPage={rowsPerPage}
-                                page={page}
-                                onPageChange={(event, newPage) => setPage(newPage)}
-                                onRowsPerPageChange={handleChangeRowsPerPage}
-                              />
-                            </>
-                          ) : (
-                            <p style={{ textAlign: "center", margin: "20px 0" }}>
-                              No event data available
-                            </p>
-                          )}
-                        </TableContainer>
-                      </MDBox>
-                    </>
+                                ))}
+                              </tbody>
+                            </table>
+                            <TablePagination
+                              rowsPerPageOptions={[10, 25, 50, 100]}
+                              component="div"
+                              count={totalRepots}
+                              rowsPerPage={rowsPerPage}
+                              page={page}
+                              onPageChange={(event, newPage) => setPage(newPage)}
+                              onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                            <FormControl
+                              variant="outlined"
+                              sx={{
+                                minWidth: 120,
+                                position: "absolute",
+                                marginTop: "-30px",
+                              }}
+                            >
+                              <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                              <Select
+                                labelId="rows-per-page-label"
+                                value={rowsPerPage}
+                                onChange={handleChangeRowsPerPage}
+                                label="Rows per page"
+                                style={{ height: "36px", fontSize: "16px" }}
+                              >
+                                <MenuItem value={10}>10</MenuItem>
+                                <MenuItem value={25}>25</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                <MenuItem value={100}>100</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </>
+                        ) : (
+                          <p style={{ textAlign: "center", margin: "20px 0" }}>
+                            No event data available
+                          </p>
+                        )}
+                      </TableContainer>
+                    </MDBox>
                   </>
                 </MDBox>
               </MDBox>
