@@ -94,7 +94,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
   const renderRoutes = routes
-    .filter(({ key }) => key !== "sign-in") // Filter out the SignIn route
+    .filter(({ key }) => key !== "sign-in" && key !== "addevents")
     .map(({ type, name, icon, title, noCollapse, key, href, route }) => {
       let returnValue;
 
