@@ -10,11 +10,24 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
 
   const inputStyle = { margin: "10px", width: "100%" };
 
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files); // Get all selected files
+    setSelectedFiles(files);
+  };
+
   // Fetch gallery images when the component mounts
   const fetchImages = async () => {
     setLoading(true);
+    const token = localStorage.getItem("userToken");
+
     try {
-      const response = await api.get(`/uploads/event/gallery/${eventId}`);
+      const response = await api.get(`/uploads/event/gallery/${eventId}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       console.log("API Response:", response.data); // Log the full response to debug
       if (response.status === 200) {
         // Check if 'images' exists and is an array
@@ -34,17 +47,13 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
     }
   };
 
-  const handleFileChange = (event) => {
-    const files = Array.from(event.target.files); // Get all selected files
-    setSelectedFiles(files);
-  };
-
   const handleFileUpload = async () => {
     if (selectedFiles.length === 0) {
       alert("Please select at least one file to upload.");
       return;
     }
 
+    const token = localStorage.getItem("userToken");
     const formData = new FormData();
     selectedFiles.forEach((file) => {
       formData.append("images", file, file.name); // Append each selected file
@@ -53,6 +62,7 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
     const requestOptions = {
       headers: {
         "Content-Type": "multipart/form-data", // Set content type for file upload
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -63,6 +73,7 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
         formData,
         requestOptions
       );
+
       if (response.status === 200) {
         alert("Images uploaded successfully.");
         await fetchImages();
@@ -84,10 +95,17 @@ const Gallery = ({ eventId, layoutImageUrl }) => {
 
   const handleDeleteImage = async (url) => {
     setLoading(true);
+    const token = localStorage.getItem("userToken");
     const fileName = url.split("/").pop(); // Get the file name from the URL
 
     try {
-      const response = await api.delete(`/uploads/event/gallery/${eventId}/${fileName}`);
+      const response = await api.delete(`/uploads/event/gallery/${eventId}/${fileName}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (response.status === 200) {
         alert("Image deleted successfully.");
         await fetchImages();

@@ -12,10 +12,21 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
 
   const inputStyle = { margin: "10px", width: "100%" };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
   const fetchImages = async () => {
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     setLoading(true);
     try {
-      const response = await api.get(`/uploads/event/thumbnail/${eventId}`);
+      const response = await api.get(`/uploads/event/thumbnail/${eventId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("API Response:", response.data); // Log the full response to debug
       if (response.status === 200) {
         // Check if 'images' exists and is an array
@@ -35,23 +46,20 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
-  };
-
   const handleFileUpload = async () => {
     if (!selectedFile) {
       alert("Please select a file to upload.");
       return;
     }
 
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     const formData = new FormData();
     formData.append("image", selectedFile, selectedFile.name);
 
     const requestOptions = {
       headers: {
         "Content-Type": "multipart/form-data", // Make sure to set the content type for file upload
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -84,8 +92,14 @@ const Upload = ({ eventId, thumbUrl, layoutImageUrl, galleryImages }) => {
   const handleDeleteImage = async (url) => {
     setLoading(true);
     const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     try {
-      const response = await api.delete(`/uploads/event/thumbnail/${eventId}`);
+      const response = await api.delete(`/uploads/event/thumbnail/${eventId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.status === 200) {
         alert("Image deleted successfully.");
         await fetchImages();

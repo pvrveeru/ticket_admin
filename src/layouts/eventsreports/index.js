@@ -55,10 +55,21 @@ function EventsReports() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+      const url = `/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0`;
+
       try {
-        const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
-        );
+        const response = await api.get(url, {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const eventData = response.data.data;
         if (Array.isArray(eventData)) {
@@ -112,12 +123,23 @@ function EventsReports() {
 
   // Handle search button click
   const handleSearch = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+    const url = `/events/reports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`;
+
     if (selectedEventId) {
       // Search by event ID
       try {
-        const response = await api.get(
-          `/events/reports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
-        );
+        const response = await api.get(url, {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log("Search by Event ID Response:", response.data.data);
         const events = response.data.data.events;
         const totalNoOfRecords = response.data.data.totalNoOfRecords;

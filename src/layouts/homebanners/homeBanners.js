@@ -30,9 +30,23 @@ const HomeBanners = () => {
 
   // Fetch gallery images when the component mounts
   const fetchImages = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const url = `/uploads/bannerImages`;
+
     setLoading(true);
     try {
-      const response = await api.get(`/uploads/bannerImages`);
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("API Response:", response.data); // Log the full response to debug
       if (response.status === 200) {
         // Check if 'images' exists and is an array
@@ -63,14 +77,22 @@ const HomeBanners = () => {
       return;
     }
 
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
     const formData = new FormData();
     selectedFiles.forEach((file) => {
-      formData.append("images", file, file.name); // Append each selected file
+      formData.append("images", file, file.name);
     });
 
     const requestOptions = {
       headers: {
-        "Content-Type": "multipart/form-data", // Set content type for file upload
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -80,7 +102,6 @@ const HomeBanners = () => {
       if (response.status === 200) {
         alert("Images uploaded successfully.");
         await fetchImages();
-        // Append newly uploaded images to the existing ones
         setImages((prevImages) => [
           ...prevImages,
           ...(Array.isArray(response.data.images) ? response.data.images : []),
@@ -97,14 +118,26 @@ const HomeBanners = () => {
   };
 
   const handleDeleteImage = async (url) => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
     setLoading(true);
-    const fileName = url.split("/").pop(); // Get the file name from the URL
+    const fileName = url.split("/").pop();
 
     try {
-      const response = await api.delete(`/uploads/bannerImages/${fileName}`);
+      const response = await api.delete(`/uploads/bannerImages/${fileName}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (response.status === 200) {
         alert("Image deleted successfully.");
-        setImages((prevImages) => prevImages.filter((image) => image !== url)); // Remove deleted image locally
+        setImages((prevImages) => prevImages.filter((image) => image !== url));
       } else {
         console.error("Failed to delete image", response.statusText);
       }

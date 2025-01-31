@@ -19,10 +19,16 @@ const Payments = ({ eventId }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const fetchPaymentData = async () => {
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     try {
-      const response = await api.get(`/charges?eventId=${eventId}`);
+      const response = await api.get(`/charges?eventId=${eventId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const charges = Array.isArray(response.data?.data?.charges) ? response.data.data.charges : [];
       setPaymentList(charges);
       console.log("Fetched payments:", charges);
@@ -34,6 +40,8 @@ const Payments = ({ eventId }) => {
 
   const handlePaymentSubmit = async () => {
     setLoading(true);
+    const token = localStorage.getItem("userToken");
+
     const eventData = {
       eventId: Number(eventId),
       convenienceFee: parseFloat(formData.convenienceFee),
@@ -42,10 +50,20 @@ const Payments = ({ eventId }) => {
 
     try {
       if (isEditing && editingPaymentId) {
-        await api.put(`/charges/${editingPaymentId}`, eventData);
+        await api.put(`/charges/${editingPaymentId}`, eventData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         alert("Payment updated successfully");
       } else {
-        await api.post("/charges", eventData);
+        await api.post("/charges", eventData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         alert("Payment created successfully");
       }
       await fetchPaymentData();
@@ -61,8 +79,14 @@ const Payments = ({ eventId }) => {
   };
 
   const handleDeletePayment = async (chargeId) => {
+    const token = localStorage.getItem("userToken");
     try {
-      await api.delete(`/charges/${chargeId}`);
+      await api.delete(`/charges/${chargeId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       alert("Payment deleted successfully");
       fetchPaymentData();
     } catch (error) {

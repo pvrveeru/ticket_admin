@@ -122,11 +122,15 @@ const AddEvents = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const fetchEventTypes = async () => {
+      const token = localStorage.getItem("userToken"); // Retrieve token from storage
       try {
-        const response = await api.get("/event-category");
+        const response = await api.get("/event-category", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+        });
         console.log("Event types data:", response.data); // Check the format of the response
 
         // Extract categories from the nested response
@@ -150,8 +154,13 @@ const AddEvents = () => {
   useEffect(() => {
     if (eventId) {
       const fetchEventData = async () => {
+        const token = localStorage.getItem("userToken"); // Retrieve token from storage
         try {
-          const response = await api.get(`/events/${eventId}`);
+          const response = await api.get(`/events/${eventId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the token in the headers
+            },
+          });
           const data = response.data.data;
           console.log(data);
           setFormData({
@@ -194,10 +203,15 @@ const AddEvents = () => {
   }, [eventId]);
 
   const updateEvent = async () => {
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     setLoading(true);
 
     try {
-      await api.put(`/events/${eventId}`, formData);
+      await api.put(`/events/${eventId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+      });
       alert("Event updated successfully");
       //navigate("/events");
     } catch (error) {

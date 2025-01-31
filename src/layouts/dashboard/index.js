@@ -49,11 +49,22 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+
+      const url = `/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=`;
+
       try {
-        const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
-        );
-        console.log("Full API Response:", response.data);
+        const response = await api.get(url, {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const eventData = response.data.data;
         if (Array.isArray(eventData)) {
@@ -106,36 +117,40 @@ function Dashboard() {
 
   // Handle search button click
   const handleSearch = async () => {
-    if (selectedEventId) {
-      try {
-        const response = await api.get(
-          `/admin/getSummaryData?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
-        );
-        if (response.data && response.data.data) {
-          setSummaryData(response.data.data);
-        } else {
-          console.error("Unexpected response structure:", response);
-        }
-      } catch (error) {
-        console.error("Error fetching reports by Event ID:", error);
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const headers = {
+      Accept: "*/*",
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      let url = "";
+      if (selectedEventId) {
+        url = `/admin/getSummaryData?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`;
+      } else if (startDate && endDate) {
+        const formattedStartDate = startDate.format("YYYY-MM-DD");
+        const formattedEndDate = endDate.format("YYYY-MM-DD");
+        url = `/admin/getSummaryData?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`;
+      } else {
+        console.error("Please select either an event or a date range.");
+        return;
       }
-    } else if (startDate && endDate) {
-      const formattedStartDate = startDate.format("YYYY-MM-DD");
-      const formattedEndDate = endDate.format("YYYY-MM-DD");
-      try {
-        const response = await api.get(
-          `/admin/getSummaryData?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
-        );
-        if (response.data && response.data.data) {
-          setSummaryData(response.data.data);
-        } else {
-          console.error("Unexpected response structure:", response);
-        }
-      } catch (error) {
-        console.error("Error fetching reports by Date Range:", error);
+
+      const response = await api.get(url, { headers });
+
+      if (response.data && response.data.data) {
+        setSummaryData(response.data.data);
+      } else {
+        console.error("Unexpected response structure:", response);
       }
-    } else {
-      console.error("Please select either an event or a date range.");
+    } catch (error) {
+      console.error("Error fetching reports:", error);
     }
   };
 

@@ -35,9 +35,23 @@ const Categories = () => {
   }, []);
 
   const fetchCategories = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const url = `/event-category`;
+
     try {
       setLoading(true);
-      const response = await api.get("/event-category");
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log(response.data.data.categories);
       setCategories(response.data.data.categories || []);
     } catch (err) {
@@ -72,22 +86,41 @@ const Categories = () => {
   const handleFormSubmit = useCallback(async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+
+      const headers = {
+        Accept: "*/*",
+        Authorization: `Bearer ${token}`,
+      };
+
       if (editingCategory) {
-        await api.put(`/event-category/${editingCategory.categoryId}`, {
-          categoryName: formData.categoryName,
-          uniqueCategoryId: formData.uniqueCategoryId,
-        });
+        await api.put(
+          `/event-category/${editingCategory.categoryId}`,
+          {
+            categoryName: formData.categoryName,
+            uniqueCategoryId: formData.uniqueCategoryId,
+          },
+          { headers }
+        );
       } else {
-        const response = await api.post("/event-category", {
-          categoryName: formData.categoryName,
-          uniqueCategoryId: formData.uniqueCategoryId,
-        });
+        const response = await api.post(
+          "/event-category",
+          {
+            categoryName: formData.categoryName,
+            uniqueCategoryId: formData.uniqueCategoryId,
+          },
+          { headers }
+        );
         setCategories([...categories, response.data.data]);
       }
+
       handleCloseDialog();
       fetchCategories(); // Fetch updated categories after edit/add
-
-      // **Fetch updated categories after edit or add**
     } catch (err) {
       setError("Failed to submit. Please try again.");
     } finally {
@@ -98,7 +131,20 @@ const Categories = () => {
   const handleDeleteCategory = async () => {
     try {
       setLoading(true);
-      await api.delete(`/event-category/${categoryToDelete.categoryId}`);
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+
+      await api.delete(`/event-category/${categoryToDelete.categoryId}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setCategories(categories.filter((c) => c.categoryId !== categoryToDelete.categoryId));
       setIsDeleteConfirmOpen(false);
       setCategoryToDelete(null);

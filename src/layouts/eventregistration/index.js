@@ -52,11 +52,22 @@ function EventRegistration() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+
+      const url = `/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0`;
+
       try {
-        const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
-        );
-        console.log("Full API Response:", response.data.data);
+        const response = await api.get(url, {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const eventData = response.data.data;
         if (Array.isArray(eventData)) {
@@ -78,14 +89,26 @@ function EventRegistration() {
   };
 
   const fetchBookings = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const url = `/bookings?eventId=${selectedEventId}&search=${searchQuery}&sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${
+      page * rowsPerPage
+    }`;
+
     if (!selectedEventId) return;
     setLoading(true);
     try {
-      const response = await api.get(
-        `/bookings?eventId=${selectedEventId}&search=${searchQuery}&sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${
-          page * rowsPerPage
-        }`
-      );
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       // Extracting bookings and total records
       const bookings = response.data.data.bookings;
       const totalNoOfRecords = response.data.data.totalNoOfRecords;

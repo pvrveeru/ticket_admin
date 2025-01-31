@@ -55,10 +55,22 @@ function FinanceReports() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("User not authenticated. Please log in.");
+        navigate("/authentication/sign-in/");
+        return;
+      }
+
+      const url = `/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0`;
+
       try {
-        const response = await api.get(
-          "/events/dropdown?sortBy=createdAt&sortOrder=asc&limit=100&offset=0"
-        );
+        const response = await api.get(url, {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log("Full API Response:", response.data);
 
         const eventData = response.data.data;
@@ -112,38 +124,41 @@ function FinanceReports() {
 
   // Handle search button click
   const handleSearch = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    let url = "";
+
     if (selectedEventId) {
       // Search by event ID
-      try {
-        const response = await api.get(
-          `/payment-details/financeReports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
-        );
-        const events = response.data.data.events;
-        const totalNoOfRecords = response.data.data.totalNoOfRecords;
-        setTableData(events); // Update table data
-        setTotalReports(totalNoOfRecords); // Update total bookings count
-      } catch (error) {
-        console.error("Error fetching reports by Event ID:", error);
-      }
+      url = `/payment-details/financeReports?eventId=${selectedEventId}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`;
     } else if (startDate && endDate) {
       // Search by date range
       const formattedStartDate = startDate.format("YYYY-MM-DD");
       const formattedEndDate = endDate.format("YYYY-MM-DD");
-
-      try {
-        const response = await api.get(
-          `/payment-details/financeReports?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`
-        );
-        console.log("Search by Date Range Response:", response.data);
-        const events = response.data.data.events;
-        const totalNoOfRecords = response.data.data.totalNoOfRecords;
-        setTableData(events); // Update table data
-        setTotalReports(totalNoOfRecords); // Update total bookings count
-      } catch (error) {
-        console.error("Error fetching reports by Date Range:", error);
-      }
+      url = `/payment-details/financeReports?startDate=${formattedStartDate}&endDate=${formattedEndDate}&sortBy=createdAt&sortOrder=asc&limit=10&offset=0`;
     } else {
       console.error("Please select either an event or a date range.");
+      return;
+    }
+
+    try {
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`, // Token applied to all requests
+        },
+      });
+
+      const { events, totalNoOfRecords } = response.data.data;
+      setTableData(events); // Update table data
+      setTotalReports(totalNoOfRecords); // Update total bookings count
+    } catch (error) {
+      console.error("Error fetching reports:", error);
     }
   };
 

@@ -10,11 +10,24 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
 
   const inputStyle = { margin: "10px", width: "100%" };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
   const fetchImages = async () => {
     setLoading(true);
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
+
     try {
-      const response = await api.get(`/uploads/event/layout/${eventId}`);
-      console.log("API Response:", response.data); // Log the full response to debug
+      const response = await api.get(`/uploads/event/layout/${eventId}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("API Response:", response.data); // Log full response for debugging
       if (response.status === 200) {
         // Check if 'images' exists and is an array
         if (Array.isArray(response.data.images)) {
@@ -33,31 +46,29 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
-  };
-
   const handleFileUpload = async () => {
     if (!selectedFile) {
       alert("Please select a file to upload.");
       return;
     }
 
+    const token = localStorage.getItem("userToken");
     const formData = new FormData();
     formData.append("image", selectedFile, selectedFile.name);
 
     const requestOptions = {
       headers: {
-        "Content-Type": "multipart/form-data", // Make sure to set the content type for file upload
+        "Content-Type": "multipart/form-data", // Set content type for file upload
+        Authorization: `Bearer ${token}`,
       },
     };
 
     setLoading(true);
     try {
       const response = await api.post(`/uploads/event/layout/${eventId}`, formData, requestOptions);
+
       if (response.status === 200) {
-        alert("Images uploaded successfully.");
+        alert("Image uploaded successfully.");
         await fetchImages();
         // Append newly uploaded images to the existing ones
         setImages((prevImages) => [
@@ -65,11 +76,11 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
           ...(Array.isArray(response.data.images) ? response.data.images : []),
         ]);
       } else {
-        console.error("Failed to upload images", response.statusText);
+        console.error("Failed to upload image", response.statusText);
       }
     } catch (error) {
-      console.error("Error:", error);
-      //alert(`Failed to upload image: ${error.message}`);
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image.");
     } finally {
       setLoading(false);
     }
@@ -77,9 +88,17 @@ const LayoutImage = ({ eventId, thumbUrl, layoutImageUrl }) => {
 
   const handleDeleteImage = async (url) => {
     setLoading(true);
-    const fileName = url.split("/").pop(); // This will get the last part of the URL (the file name)
+    const token = localStorage.getItem("userToken");
+    const fileName = url.split("/").pop(); // Get the file name from the URL
+
     try {
-      const response = await api.delete(`/uploads/event/layout/${eventId}`);
+      const response = await api.delete(`/uploads/event/layout/${eventId}/${fileName}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (response.status === 200) {
         alert("Image deleted successfully.");
         await fetchImages();

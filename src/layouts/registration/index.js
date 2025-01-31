@@ -36,9 +36,22 @@ function Registration() {
   const apiUrl = "http://64.227.157.67:5001/api/v1/users";
 
   const fetchUsers = useCallback(async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const url = `/users`;
+
     setLoading(true);
     try {
-      const response = await axios.get(apiUrl, {
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
         params: {
           startDate: startDate.format("YYYY-MM-DD"),
           endDate: endDate.format("YYYY-MM-DD"),

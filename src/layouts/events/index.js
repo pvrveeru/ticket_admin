@@ -34,12 +34,26 @@ const Events = () => {
   const [totalCount, setTotalCount] = useState(0); // To store the total count of events
 
   // Fetch data from API
+
   const fetchEvents = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+    const offset = page * rowsPerPage; // Calculate offset for pagination
+
+    const url = `/events?sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${offset}`;
+
     try {
-      const offset = page * rowsPerPage; // Calculate offset for pagination
-      const response = await api.get(
-        `/events?sortBy=createdAt&sortOrder=asc&limit=${rowsPerPage}&offset=${offset}`
-      );
+      const response = await api.get(url, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const event = response.data.data.result;
       const totalRecords = response.data.data.totalNoOfRecords;
 

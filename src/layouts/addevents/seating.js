@@ -21,8 +21,14 @@ const Seating = ({ eventId }) => {
   };
 
   const fetchZoneData = async () => {
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     try {
-      const response = await api.get(`/seating-options?eventId=${eventId}`);
+      const response = await api.get(`/seating-options?eventId=${eventId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // Extract seating options from the response
       const seatingOptions = Array.isArray(response.data?.data?.seatingOptions)
@@ -39,6 +45,8 @@ const Seating = ({ eventId }) => {
 
   const handleZoneSubmit = async () => {
     setLoading(true);
+    const token = localStorage.getItem("userToken");
+
     const eventData = {
       eventId: Number(eventId),
       zoneName: formData.zoneName,
@@ -49,11 +57,21 @@ const Seating = ({ eventId }) => {
     try {
       if (isEditing && editingZoneId) {
         // PUT request for updating
-        await api.put(`/seating-options/${editingZoneId}`, eventData);
+        await api.put(`/seating-options/${editingZoneId}`, eventData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         alert("Zone updated successfully");
       } else {
         // POST request for creating
-        await api.post("/seating-options", eventData);
+        await api.post("/seating-options", eventData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         alert("Zone created successfully");
       }
       // Refresh the list and reset the form
@@ -70,8 +88,14 @@ const Seating = ({ eventId }) => {
   };
 
   const handleDeleteZone = async (seatingId) => {
+    const token = localStorage.getItem("userToken");
     try {
-      await api.delete(`/seating-options/${seatingId}`);
+      await api.delete(`/seating-options/${seatingId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       alert("Zone deleted successfully");
       fetchZoneData(); // Refresh the zone list
     } catch (error) {
