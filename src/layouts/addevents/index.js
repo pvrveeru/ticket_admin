@@ -58,6 +58,8 @@ const AddEvents = () => {
     language: "",
     description: "",
     brief: "",
+    latitude: "",
+    longitude: "",
     maxTicketAllowed: "",
     status: "",
     stage: "",
@@ -112,7 +114,7 @@ const AddEvents = () => {
     try {
       const response = await api.post("/events", formData);
       alert("Event created successfully");
-      fetchEventData();
+      navigate("/events");
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event");
@@ -171,6 +173,8 @@ const AddEvents = () => {
             language: data.language || "",
             description: data.description || "",
             brief: data.brief || "",
+            latitude: data.latitude || "",
+            longitude: data.longitude || "",
             maxTicketAllowed: data.maxTicketAllowed || "",
             status: data.status || "",
             isPopular: data.isPopular || false,
@@ -195,7 +199,7 @@ const AddEvents = () => {
     try {
       await api.put(`/events/${eventId}`, formData);
       alert("Event updated successfully");
-      navigate("/events");
+      //navigate("/events");
     } catch (error) {
       console.error("Error updating event:", error);
       alert("Failed to update event");
@@ -477,6 +481,28 @@ const AddEvents = () => {
                         <MenuItem value="Kerala">Kerala</MenuItem>
                         <MenuItem value="Maharashtra">Maharashtra</MenuItem>
                       </Select>
+                      <TextField
+                        name="latitude"
+                        label="Event latitude"
+                        style={inputStyle}
+                        value={formData.latitude}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="longitude"
+                        label="Event longitude"
+                        style={inputStyle}
+                        value={formData.longitude}
+                        onChange={handleInputChange}
+                      />
+                      <a
+                        href="https://www.gps-coordinates.net/"
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: "inline-block", marginTop: "15px", marginLeft: "25px" }}
+                      >
+                        Get latitude / longitude
+                      </a>
                       <h3>Event type info</h3>
                       <hr></hr>
 

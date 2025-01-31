@@ -155,7 +155,7 @@ const Seating = ({ eventId }) => {
             <tr>
               <th style={tableCellStyle}>Zone</th>
               <th style={tableCellStyle}>Price</th>
-              <th style={tableCellStyle}>Seating</th>
+              <th style={tableCellStyle}>Seating Available</th>
               <th style={tableCellStyle}>Capacity</th>
               <th style={tableCellStyle}>Action</th>
             </tr>
