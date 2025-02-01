@@ -21,15 +21,24 @@ const Payments = ({ eventId }) => {
   };
   const fetchPaymentData = async () => {
     const token = localStorage.getItem("userToken"); // Retrieve token from storage
+
     try {
-      const response = await api.get(`/charges?eventId=${eventId}`, {
+      const response = await api.get(`/charges/event/${eventId}`, {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const charges = Array.isArray(response.data?.data?.charges) ? response.data.data.charges : [];
+      // Ensure `data` is an array
+      const paymentData = response.data?.data;
+
+      const charges = Array.isArray(paymentData)
+        ? paymentData
+        : paymentData
+        ? [paymentData] // Wrap single object in an array
+        : [];
+
       setPaymentList(charges);
       console.log("Fetched payments:", charges);
     } catch (error) {
