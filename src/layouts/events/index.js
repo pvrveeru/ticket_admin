@@ -133,6 +133,7 @@ const Events = () => {
                               <th style={tableCellStyle}>Event Date</th>
                               <th style={tableCellStyle}>Location</th>
                               <th style={tableCellStyle}>Tickets</th>
+                              <th style={tableCellStyle}>Status</th>
                               <th style={tableCellStyle}>Action</th>
                             </tr>
                           </thead>
@@ -153,7 +154,8 @@ const Events = () => {
                                     {new Date(event.eventDate).toLocaleDateString()}
                                   </td>
                                   <td style={tableCellStyle}>{event.location}</td>
-                                  <td style={tableCellStyle}>{event.maxTicketAllowed}</td>
+                                  <td style={tableCellStyle}>{event.totalCapacity}</td>
+                                  <td style={tableCellStyle}>{event.status}</td>
                                   <td style={tableCellStyle}>
                                     <MDButton
                                       style={{ marginRight: "10px" }}

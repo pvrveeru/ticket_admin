@@ -325,7 +325,7 @@ function FinanceReports() {
                                       {new Date(event.eventDate).toLocaleDateString()}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                      {event.maxTicketAllowed}
+                                      {event.totalCapacity}
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                       {Array.isArray(event.seatingDetails) ? (
