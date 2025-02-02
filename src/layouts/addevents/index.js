@@ -60,6 +60,8 @@ const AddEvents = () => {
     brief: "",
     latitude: "",
     longitude: "",
+    totalCapacity: "",
+    tnc: "",
     maxTicketAllowed: "",
     status: "",
     stage: "",
@@ -185,6 +187,8 @@ const AddEvents = () => {
             latitude: data.latitude || "",
             longitude: data.longitude || "",
             maxTicketAllowed: data.maxTicketAllowed || "",
+            totalCapacity: data.totalCapacity || "",
+            tnc: data.tnc || "",
             status: data.status || "",
             isPopular: data.isPopular || false,
             isFeatured: data.isFeatured || false,
@@ -335,7 +339,7 @@ const AddEvents = () => {
                       />
                       <TextField
                         name="uniqueEventId"
-                        label="Unique event ID"
+                        label="Unique Event ID"
                         style={inputStyle}
                         value={formData.uniqueEventId}
                         onChange={handleInputChange}
@@ -386,7 +390,7 @@ const AddEvents = () => {
                         <MenuItem value="Full day">Full day</MenuItem>
                       </Select>
 
-                      <h3>Event Stage info</h3>
+                      <h3>Event Stage Info</h3>
                       <hr></hr>
 
                       <Select
@@ -430,20 +434,30 @@ const AddEvents = () => {
                           Select Age Limit
                         </MenuItem>
                         <MenuItem value="All Ages">All Ages</MenuItem>
+                        <MenuItem value="18+">5+</MenuItem>
+                        <MenuItem value="18+">10+</MenuItem>
                         <MenuItem value="18+">18+</MenuItem>
                         <MenuItem value="21+">21+</MenuItem>
                         <MenuItem value="No Limit">No Limit</MenuItem>
                       </Select>
 
                       <TextField
-                        name="maxTicketAllowed"
+                        name="totalCapacity"
                         label="No Tickets"
+                        style={inputStyle}
+                        value={formData.totalCapacity}
+                        onChange={handleInputChange}
+                      />
+
+                      <TextField
+                        name="maxTicketAllowed"
+                        label="Max Allowed"
                         style={inputStyle}
                         value={formData.maxTicketAllowed}
                         onChange={handleInputChange}
                       />
 
-                      <h3>Event Venue info</h3>
+                      <h3>Event Venue Info</h3>
                       <hr></hr>
 
                       <TextField
@@ -497,14 +511,14 @@ const AddEvents = () => {
                       </Select>
                       <TextField
                         name="latitude"
-                        label="Event latitude"
+                        label="Event Latitude"
                         style={inputStyle}
                         value={formData.latitude}
                         onChange={handleInputChange}
                       />
                       <TextField
                         name="longitude"
-                        label="Event longitude"
+                        label="Event Longitude"
                         style={inputStyle}
                         value={formData.longitude}
                         onChange={handleInputChange}
@@ -517,7 +531,7 @@ const AddEvents = () => {
                       >
                         Get latitude / longitude
                       </a>
-                      <h3>Event type info</h3>
+                      <h3>Event Type Info</h3>
                       <hr></hr>
 
                       <TextField
@@ -535,7 +549,7 @@ const AddEvents = () => {
                         displayEmpty
                       >
                         <MenuItem value="" disabled>
-                          Select Music type
+                          Select Music Type
                         </MenuItem>
                         <MenuItem value="Electronic Dance">Electronic Dance</MenuItem>
                         <MenuItem value="Rock">Rock</MenuItem>
@@ -585,7 +599,7 @@ const AddEvents = () => {
                         <MenuItem value="Bengali">Bengali</MenuItem>
                         <MenuItem value="Punjabi">Punjabi</MenuItem>
                       </Select>
-                      <h3>Event description</h3>
+                      <h3>Event Description</h3>
                       <hr></hr>
                       <TextField
                         name="description"
@@ -601,6 +615,15 @@ const AddEvents = () => {
                         label="Event Short Info"
                         style={fullWidthInputStyle}
                         value={formData.brief}
+                        multiline
+                        rows={3}
+                        onChange={handleInputChange}
+                      />
+                      <TextField
+                        name="tnc"
+                        label="Terms and Conditions"
+                        style={fullWidthInputStyle}
+                        value={formData.tnc}
                         multiline
                         rows={3}
                         onChange={handleInputChange}
