@@ -401,7 +401,7 @@ const AddEvents = () => {
                         displayEmpty
                       >
                         <MenuItem value="" disabled>
-                          Select stage
+                          Select Stage
                         </MenuItem>
                         <MenuItem value="Outdoor">Outdoor</MenuItem>
                         <MenuItem value="Indoor">Indoor</MenuItem>
