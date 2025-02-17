@@ -1,6 +1,5 @@
 //event create page
 
-
 import React, { useState, useEffect } from "react";
 import {
   TextField,
@@ -374,7 +373,7 @@ const AddEvents = () => {
                         onChange={handleInputChange}
                         InputLabelProps={{ shrink: true }}
                       />
-                     
+
                       <TextField
                         name="eventDate"
                         label="Event Date"
