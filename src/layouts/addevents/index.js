@@ -107,14 +107,17 @@ const AddEvents = () => {
   };
 
   const handleSubmit = async () => {
+    const token = localStorage.getItem("userToken"); // Retrieve token from storage
     setLoading(true);
-    // const eventData = new FormData();
-    // Object.entries(formData).forEach(([key, value]) => {
-    //   eventData.append(key, value);
-    // });
 
     try {
-      const response = await api.post("/events", formData);
+      const response = await api.post("/events", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json", // Ensure correct content type
+        },
+      });
+
       alert("Event created successfully");
       navigate("/events");
     } catch (error) {
@@ -124,6 +127,7 @@ const AddEvents = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     const fetchEventTypes = async () => {
       const token = localStorage.getItem("userToken"); // Retrieve token from storage
@@ -349,8 +353,9 @@ const AddEvents = () => {
                       <TextField
                         name="startDate"
                         label="Event Start Date"
-                        type="datetime-local"
+                        type="text"
                         style={inputStyle}
+                        placeholder="yyyy-MM-DD HH:MM"
                         value={formData.startDate ? formData.startDate.slice(0, 16) : ""}
                         onChange={handleInputChange}
                         InputLabelProps={{ shrink: true }}
@@ -358,8 +363,10 @@ const AddEvents = () => {
                       <TextField
                         name="endDate"
                         label="Event End Date"
-                        type="datetime-local"
+                        //type="datetime-local"
+                        type="text"
                         style={inputStyle}
+                        placeholder="yyyy-MM-DD HH:MM"
                         value={formData.endDate ? formData.endDate.slice(0, 16) : ""}
                         onChange={handleInputChange}
                         InputLabelProps={{ shrink: true }}
@@ -367,7 +374,9 @@ const AddEvents = () => {
                       <TextField
                         name="eventDate"
                         label="Event Date"
-                        type="date"
+                        //type="date"
+                        type="text"
+                        placeholder="yyyy-MM-DD"
                         style={inputStyle}
                         value={formData.eventDate ? formData.eventDate.slice(0, 10) : ""}
                         onChange={handleInputChange}
