@@ -84,24 +84,6 @@ function Dashboard() {
     setEndDate();
   }, []);
 
-  const [apiResponse, setApiResponse] = useState(null);
-
-  useEffect(() => {
-    const fetchApiResponse = async () => {
-      try {
-        const response = await axios.get("https://api-auth.properties24.co.in/", {
-          headers: { "Content-Type": "application/json" },
-        });
-        setApiResponse(response.data); // Expected response: {"flag":"9090 ok"}
-      } catch (err) {
-        console.error("API error:", err);
-        setError("Failed to fetch API response.");
-      }
-    };
-
-    fetchApiResponse();
-  }, []);
-
   const handleSelectChange = (event) => {
     setSelectedEventId(event.target.value);
     if (event.target.value) {
@@ -186,14 +168,6 @@ function Dashboard() {
     <DashboardLayout>
       <div className="hide-on-desktop">
         <DashboardNavbar />
-      </div>
-      <div>
-        API response properties24:{" "}
-        {error ? (
-          <p style={{ color: "red" }}>{error}</p>
-        ) : (
-          <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
-        )}
       </div>
       <MDBox pt={3} pb={3}>
         <Grid item xs={12}>
