@@ -32,6 +32,14 @@ import api from "../api";
 import Seating from "./seating";
 import Upload from "./upload";
 import Payments from "./payments";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 const AddEvents = () => {
   const navigate = useNavigate();
@@ -57,7 +65,7 @@ const AddEvents = () => {
     city: "",
     state: "",
     artistName: "",
-    language: "",
+    language: [],
     description: "",
     brief: "",
     latitude: "",
@@ -68,7 +76,7 @@ const AddEvents = () => {
     status: "",
     stage: "",
     layoutStatus: "",
-    musicType: "",
+    musicType: [],
     isPopular: false,
     isFeatured: false,
     isManual: false,
@@ -77,10 +85,28 @@ const AddEvents = () => {
   const [loading, setLoading] = useState(false);
   const [eventTypes, setEventTypes] = useState([]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e, type) => {
+    if (type === "date") {
+      // Handle date input
+      setFormData({
+        ...formData,
+        [e.target.name]: e, // Store the date object directly
+      });
+    }
+
+    console.log("hellotype", type);
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (type == "lan" || type == "mus") {
+      // Handle multiple selections as an array
+      setFormData({
+        ...formData,
+        [name]: typeof value === "string" ? value.split(",") : value,
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
+  console.log("Hellothis array", formData);
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
@@ -177,7 +203,7 @@ const AddEvents = () => {
             uniqueEventId: data.uniqueEventId || "",
             stage: data.stage || "",
             layoutStatus: data.layoutStatus || "",
-            musicType: data.musicType || "",
+            musicType: data.musicType || [],
             startDate: data.startDate || "",
             endDate: data.endDate || "",
             eventDate: data.eventDate || "",
@@ -187,7 +213,7 @@ const AddEvents = () => {
             city: data.city || "",
             state: data.state || "",
             artistName: data.artistName || "",
-            language: data.language || "",
+            language: data.language || [],
             description: data.description || "",
             brief: data.brief || "",
             latitude: data.latitude || "",
@@ -352,39 +378,49 @@ const AddEvents = () => {
                       />
                       <h3>Event Date</h3>
                       <hr></hr>
-                      <TextField
-                        name="startDate"
-                        label="Event Start Date"
-                        type="text"
-                        style={inputStyle}
-                        placeholder="yyyy-MM-DD HH:MM"
-                        value={formData.startDate ? formData.startDate.slice(0, 16) : ""}
-                        onChange={handleInputChange}
-                        InputLabelProps={{ shrink: true }}
-                      />
-                      <TextField
-                        name="endDate"
-                        label="Event End Date"
-                        //type="datetime-local"
-                        type="text"
-                        style={inputStyle}
-                        placeholder="yyyy-MM-DD HH:MM"
-                        value={formData.endDate ? formData.endDate.slice(0, 16) : ""}
-                        onChange={handleInputChange}
-                        InputLabelProps={{ shrink: true }}
-                      />
 
-                      <TextField
-                        name="eventDate"
-                        label="Event Date"
-                        //type="date"
-                        type="text"
-                        placeholder="yyyy-MM-DD"
-                        style={inputStyle}
-                        value={formData.eventDate ? formData.eventDate.slice(0, 10) : ""}
-                        onChange={handleInputChange}
-                        InputLabelProps={{ shrink: true }}
-                      />
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          label="Event Start Date"
+                          value={formData.startDate ? formData.startDate : new Date()}
+                          onChange={(newDate) =>
+                            handleInputChange(
+                              { target: { name: "startDate", value: newDate } },
+                              "startDate"
+                            )
+                          }
+                          renderInput={(params) => <TextField {...params} fullWidth />}
+                          style={inputStyle}
+                        />
+                      </LocalizationProvider>
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          label="Event End Date"
+                          value={formData.endDate ? formData.endDate : new Date()}
+                          onChange={(newDate) =>
+                            handleInputChange(
+                              { target: { name: "endDate", value: newDate } },
+                              "endDate"
+                            )
+                          }
+                          renderInput={(params) => <TextField {...params} fullWidth />}
+                        />
+                      </LocalizationProvider>
+
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          label="Event Date"
+                          value={formData.eventDate ? formData.eventDate : new Date()}
+                          onChange={(newDate) =>
+                            handleInputChange(
+                              { target: { name: "eventDate", value: newDate } },
+                              "eventDate"
+                            )
+                          }
+                          renderInput={(params) => <TextField {...params} fullWidth />}
+                          style={inputStyle}
+                        />
+                      </LocalizationProvider>
                       <Select
                         name="duration"
                         style={selectStyle}
@@ -557,8 +593,12 @@ const AddEvents = () => {
                         name="musicType"
                         style={selectStyle}
                         value={formData.musicType}
-                        onChange={handleInputChange}
+                        onChange={(e) => handleInputChange(e, "mus")}
                         displayEmpty
+                        multiple
+                        renderValue={(selected) =>
+                          selected.length ? selected.join(",") : "Select Music Type"
+                        }
                       >
                         <MenuItem value="" disabled>
                           Select Music Type
@@ -595,8 +635,12 @@ const AddEvents = () => {
                         name="language"
                         style={selectStyle}
                         value={formData.language}
-                        onChange={handleInputChange}
+                        onChange={(e) => handleInputChange(e, "lan")}
                         displayEmpty
+                        multiple
+                        renderValue={(selected) =>
+                          selected.length ? selected.join(",") : "Select Language"
+                        }
                       >
                         <MenuItem value="" disabled>
                           Select Language
@@ -631,16 +675,20 @@ const AddEvents = () => {
                         rows={3}
                         onChange={handleInputChange}
                       />
-                      <TextField
-                        name="tnc"
-                        label="Terms and Conditions"
-                        style={fullWidthInputStyle}
-                        value={formData.tnc}
-                        multiline
-                        rows={3}
-                        onChange={handleInputChange}
-                      />
 
+                      <div className="quill-container">
+                        <ReactQuill
+                          name="tnc"
+                          value={formData.tnc}
+                          onChange={(content) =>
+                            setFormData((prevData) => ({
+                              ...prevData,
+                              tnc: content,
+                            }))
+                          }
+                          placeholder="Terms and Conditions"
+                        />
+                      </div>
                       <Select
                         name="status"
                         style={selectStyle}
