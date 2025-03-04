@@ -601,7 +601,7 @@ const AddEvents = () => {
                         displayEmpty
                         multiple
                         renderValue={(selected) =>
-                          selected.length ? selected.join(",") : "Select Music Type"
+                          selected.length ? selected?.join(",") : "Select Music Type"
                         }
                       >
                         <MenuItem value="" disabled>
