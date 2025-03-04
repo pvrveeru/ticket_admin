@@ -259,6 +259,7 @@ const AddEvents = () => {
   };
 
   const inputStyle = { width: "45%", margin: "10px 25px", lineHeight: "44px" };
+  const dateStyle = { width: "45%", margin: "10px 25px", lineHeight: "44px" };
   const inputZone = { width: "30%", margin: "10px 25px", lineHeight: "44px" };
   const selectStyle = { width: "45%", margin: "10px 25px", padding: "10px", height: "45px" };
   const fullWidthInputStyle = { width: "94%", margin: "10px 25px" };
@@ -377,10 +378,11 @@ const AddEvents = () => {
                         onChange={handleInputChange}
                       />
                       <h3>Event Date</h3>
+
                       <hr></hr>
 
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
+                        <DateTimePicker
                           label="Event Start Date"
                           value={formData.startDate ? formData.startDate : new Date()}
                           onChange={(newDate) =>
@@ -390,11 +392,12 @@ const AddEvents = () => {
                             )
                           }
                           renderInput={(params) => <TextField {...params} fullWidth />}
-                          style={inputStyle}
+                          sx={inputStyle}
                         />
                       </LocalizationProvider>
+
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
+                        <DateTimePicker
                           label="Event End Date"
                           value={formData.endDate ? formData.endDate : new Date()}
                           onChange={(newDate) =>
@@ -404,6 +407,7 @@ const AddEvents = () => {
                             )
                           }
                           renderInput={(params) => <TextField {...params} fullWidth />}
+                          sx={inputStyle}
                         />
                       </LocalizationProvider>
 
@@ -418,7 +422,7 @@ const AddEvents = () => {
                             )
                           }
                           renderInput={(params) => <TextField {...params} fullWidth />}
-                          style={inputStyle}
+                          sx={inputStyle}
                         />
                       </LocalizationProvider>
                       <Select
@@ -689,7 +693,7 @@ const AddEvents = () => {
                           placeholder="Terms and Conditions"
                         />
                       </div>
-                      <Select
+                      {/* <Select
                         name="status"
                         style={selectStyle}
                         value={formData.status}
@@ -702,7 +706,7 @@ const AddEvents = () => {
                         <MenuItem value="Draft">Draft</MenuItem>
                         <MenuItem value="Published">Published</MenuItem>
                         <MenuItem value="Inactive">Inactive</MenuItem>
-                      </Select>
+                      </Select> */}
                       <MDBox
                         style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}
                       >
@@ -778,6 +782,34 @@ const AddEvents = () => {
                     </AccordionDetails>
                   </Accordion>
                 </MDBox>
+              )}
+              {eventId && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+                  <Select
+                    name="status"
+                    style={selectStyle}
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    displayEmpty
+                  >
+                    <MenuItem value="" disabled>
+                      Event Status
+                    </MenuItem>
+                    <MenuItem value="Draft">Draft</MenuItem>
+                    <MenuItem value="Published">Published</MenuItem>
+                  </Select>
+
+                  <MDBox>
+                    <Button
+                      variant="contained"
+                      style={submitButton}
+                      onClick={updateEvent}
+                      disabled={loading}
+                    >
+                      {loading ? "Submitting..." : "Submit"}
+                    </Button>
+                  </MDBox>
+                </div>
               )}
             </Card>
           </Grid>

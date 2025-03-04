@@ -3,6 +3,24 @@
   display: block; /* Show on mobile and tablet */
 }
 
+.quill-container {
+  width: 94%;
+  margin-left: 25px;
+}
+.css-o0cc1y-MuiButtonBase-root-MuiMenuItem-root-MuiMultiSectionDigitalClockSection-item { 
+  min-width: 2rem !important;
+}
+.css-1gli0rh-MuiMultiSectionDigitalClock-root.MuiMultiSectionDigitalClock-root {
+  padding-top: 10px;
+  padding-right: 10px;
+  margin-right: 10px;
+}
+.css-69mau-MuiList-root-MuiMultiSectionDigitalClockSection-root {
+  width: auto !important;
+}
+.css-clfprf-MuiPickersLayout-root .MuiPickersLayout-actionBar {
+  display: none;
+}
 h3 {
   margin-top: 20px;
   font-weight: normal;
