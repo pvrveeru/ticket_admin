@@ -23,23 +23,18 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import MDButton from "components/MDButton";
-import CreateIcon from "@mui/icons-material/Create";
-import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios";
 import "../styles.css"; // Custom styles
 import api from "../api";
 import Seating from "./seating";
 import Upload from "./upload";
 import Payments from "./payments";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { parseISO } from "date-fns";
+import { DatePicker } from "@mui/x-date-pickers";
 
 const AddEvents = () => {
   const navigate = useNavigate();
@@ -51,6 +46,7 @@ const AddEvents = () => {
   const [galleryImages, setgalleryImages] = useState(""); // Add state for thumbUrl
 
   const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
+  const { format } = require("date-fns");
 
   const [formData, setFormData] = useState({
     categoryId: "",
@@ -85,32 +81,60 @@ const AddEvents = () => {
   const [loading, setLoading] = useState(false);
   const [eventTypes, setEventTypes] = useState([]);
 
-  const handleInputChange = (e, type) => {
+  function getFormattedDate(dateInput) {
+    let date;
+
+    if (typeof dateInput === "string") {
+      date = parseISO(dateInput); // Parse ISO string to Date object
+    } else {
+      date = new Date(dateInput); // Handle Date object directly
+    }
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date provided");
+    }
+
+    return format(date, "yyyy-MM-dd HH:mm");
+  }
+
+  function convertToLocalTime(dateString) {
+    if (!dateString) return "";
+
+    // Convert the date string to a Date object
+    const parsedDate = new Date(dateString);
+
+    if (isNaN(parsedDate.getTime())) {
+      return "";
+    }
+
+    return parsedDate; // Return as Date object for MUI DateTimePicker
+  }
+
+  const handleInputChange = (e, type, name) => {
     if (type === "date") {
       // Handle date input
-      setFormData({
-        ...formData,
-        [e.target.name]: e, // Store the date object directly
-      });
-    }
 
-    console.log("hellotype", type);
-    const { name, value } = e.target;
-    if (type == "lan" || type == "mus") {
-      // Handle multiple selections as an array
       setFormData({
         ...formData,
-        [name]: typeof value === "string" ? value.split(",") : value,
+        [name]: e, // Update form data with the new date
       });
     } else {
-      setFormData({ ...formData, [name]: value });
+      const { name, value } = e.target;
+
+      if (type === "lan" || type === "mus") {
+        // Handle multiple selections as an array
+        setFormData({
+          ...formData,
+          [name]: typeof value === "string" ? value.split(",") : value,
+        });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
-  console.log("Hellothis array", formData);
 
   const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    console.log(name, checked, Boolean(checked)); // Logs the name, checked value, and its boolean conversion
+    const { name, checked } = e.target; // Logs the name, checked value, and its boolean conversion
     setFormData({ ...formData, [name]: checked });
   };
 
@@ -139,7 +163,17 @@ const AddEvents = () => {
     setLoading(true);
 
     try {
-      const response = await api.post("/events", formData, {
+      const formattedStartDate = formData?.startDate && getFormattedDate(formData?.startDate);
+      const formattedEndDate = formData?.endDate && getFormattedDate(formData?.endDate);
+      const formattedEventDate = formData?.eventDate && getFormattedDate(formData?.eventDate);
+      const payload = {
+        ...formData,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        eventDate: formattedEventDate,
+      };
+
+      const response = await api.post("/events", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json", // Ensure correct content type
@@ -196,6 +230,7 @@ const AddEvents = () => {
             },
           });
           const data = response.data.data;
+
           console.log(data);
           setFormData({
             categoryId: data.categoryId?.categoryId || "", // Set the category name here
@@ -204,9 +239,9 @@ const AddEvents = () => {
             stage: data.stage || "",
             layoutStatus: data.layoutStatus || "",
             musicType: data.musicType || [],
-            startDate: data.startDate || "",
-            endDate: data.endDate || "",
-            eventDate: data.eventDate || "",
+            startDate: convertToLocalTime(data.startDate),
+            endDate: convertToLocalTime(data.endDate),
+            eventDate: convertToLocalTime(data.eventDate),
             duration: data.duration || "",
             ageLimit: data.ageLimit || "",
             location: data.location || "",
@@ -384,13 +419,9 @@ const AddEvents = () => {
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DateTimePicker
                           label="Event Start Date"
-                          value={formData.startDate ? formData.startDate : new Date()}
-                          onChange={(newDate) =>
-                            handleInputChange(
-                              { target: { name: "startDate", value: newDate } },
-                              "startDate"
-                            )
-                          }
+                          value={formData?.startDate || new Date()}
+                          onChange={(newValue) => console.log("Preview valuestartDate:", newValue)}
+                          onAccept={(newValue) => handleInputChange(newValue, "date", "startDate")}
                           renderInput={(params) => <TextField {...params} fullWidth />}
                           sx={inputStyle}
                         />
@@ -399,13 +430,9 @@ const AddEvents = () => {
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DateTimePicker
                           label="Event End Date"
-                          value={formData.endDate ? formData.endDate : new Date()}
-                          onChange={(newDate) =>
-                            handleInputChange(
-                              { target: { name: "endDate", value: newDate } },
-                              "endDate"
-                            )
-                          }
+                          value={formData?.endDate || new Date()}
+                          onChange={(newValue) => console.log("Preview valueendDate:", newValue)}
+                          onAccept={(newValue) => handleInputChange(newValue, "date", "endDate")}
                           renderInput={(params) => <TextField {...params} fullWidth />}
                           sx={inputStyle}
                         />
@@ -414,13 +441,9 @@ const AddEvents = () => {
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
                           label="Event Date"
-                          value={formData.eventDate ? formData.eventDate : new Date()}
-                          onChange={(newDate) =>
-                            handleInputChange(
-                              { target: { name: "eventDate", value: newDate } },
-                              "eventDate"
-                            )
-                          }
+                          value={formData?.eventDate || new Date()} // Default to today if no date
+                          onChange={(newValue) => console.log("Preview value eventDate:", newValue)}
+                          onAccept={(newValue) => handleInputChange(newValue, "date", "eventDate")}
                           renderInput={(params) => <TextField {...params} fullWidth />}
                           sx={inputStyle}
                         />
