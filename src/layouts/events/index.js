@@ -141,7 +141,9 @@ const Events = () => {
                             {Array.isArray(events) &&
                               events.map((event) => (
                                 <tr key={event.eventId}>
-                                  <td style={tableCellStyle}>{event.uniqueEventId}</td>
+                                  <td style={tableCellStyle}>
+                                    {event.uniqueEventId}-({event.eventId})
+                                  </td>
                                   <td style={tableCellStyle}>
                                     {new Date(event.createdAt).toLocaleDateString()}
                                   </td>

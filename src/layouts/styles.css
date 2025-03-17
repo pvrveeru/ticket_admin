@@ -28,6 +28,12 @@ h3 {
 hr {
   margin-bottom: 20px;
 }
+
+.css-1cohrqd-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-1cohrqd-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-1cohrqd-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
+  line-height: 45px;
+}
+
+
 @media (min-width: 1024px) {
   .hide-on-desktop {
     display: none; /* Hide on desktop (1024px and larger) */

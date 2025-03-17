@@ -1,63 +1,48 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   TextField,
-  TableContainer,
   Grid,
   Card,
-  Paper,
+  CardMedia,
+  CardActions,
+  CircularProgress,
 } from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import MDButton from "components/MDButton";
-import CreateIcon from "@mui/icons-material/Create";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import { CircularProgress, CardMedia, CardActions } from "@mui/material";
 import api from "../api";
+import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 
 const HomeBanners = () => {
-  const [selectedFiles, setSelectedFiles] = useState([]); // To store selected files
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [type, setType] = useState("stype");
+  const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState([]); // To store fetched images
+  const [images, setImages] = useState([]);
 
-  const inputStyle = { margin: "10px", width: "100%" };
+  const inputStyle = { margin: "10px", width: "98%" };
 
   // Fetch gallery images when the component mounts
   const fetchImages = async () => {
     const token = localStorage.getItem("userToken");
     if (!token) {
-      setError("User not authenticated. Please log in.");
+      alert("User not authenticated. Please log in.");
       navigate("/authentication/sign-in/");
       return;
     }
 
     const url = `/uploads/bannerImages`;
-
     setLoading(true);
     try {
       const response = await api.get(url, {
         headers: {
-          Accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("API Response:", response.data); // Log the full response to debug
-      if (response.status === 200) {
-        // Check if 'images' exists and is an array
-        if (Array.isArray(response.data.images)) {
-          setImages(response.data.images); // Set the fetched images
-        } else {
-          console.warn("Images data is not an array or is missing.");
-          setImages([]); // Fallback to an empty array
-        }
-      } else {
-        console.error("Failed to fetch images", response.statusText);
+      if (response.status === 200 && Array.isArray(response.data.images)) {
+        setImages(response.data.images);
       }
     } catch (error) {
       console.error("Error fetching images:", error);
@@ -67,19 +52,19 @@ const HomeBanners = () => {
   };
 
   const handleFileChange = (event) => {
-    const files = Array.from(event.target.files); // Get all selected files
+    const files = Array.from(event.target.files);
     setSelectedFiles(files);
   };
 
   const handleFileUpload = async () => {
-    if (selectedFiles.length === 0) {
-      alert("Please select at least one file to upload.");
+    if (selectedFiles.length === 0 || !type || !url) {
+      alert("Please select files, type, and URL.");
       return;
     }
 
     const token = localStorage.getItem("userToken");
     if (!token) {
-      setError("User not authenticated. Please log in.");
+      alert("User not authenticated. Please log in.");
       navigate("/authentication/sign-in/");
       return;
     }
@@ -88,6 +73,8 @@ const HomeBanners = () => {
     selectedFiles.forEach((file) => {
       formData.append("images", file, file.name);
     });
+    formData.append("type", type);
+    formData.append("url", url);
 
     const requestOptions = {
       headers: {
@@ -101,11 +88,10 @@ const HomeBanners = () => {
       const response = await api.post(`/uploads/bannerImages`, formData, requestOptions);
       if (response.status === 200) {
         alert("Images uploaded successfully.");
+        setSelectedFiles([]);
+        setType("");
+        setUrl("");
         await fetchImages();
-        setImages((prevImages) => [
-          ...prevImages,
-          ...(Array.isArray(response.data.images) ? response.data.images : []),
-        ]);
       } else {
         console.error("Failed to upload images", response.statusText);
       }
@@ -120,7 +106,7 @@ const HomeBanners = () => {
   const handleDeleteImage = async (url) => {
     const token = localStorage.getItem("userToken");
     if (!token) {
-      setError("User not authenticated. Please log in.");
+      alert("User not authenticated. Please log in.");
       navigate("/authentication/sign-in/");
       return;
     }
@@ -137,7 +123,7 @@ const HomeBanners = () => {
 
       if (response.status === 200) {
         alert("Image deleted successfully.");
-        setImages((prevImages) => prevImages.filter((image) => image !== url));
+        setImages((prevImages) => prevImages.filter((image) => image.url !== url));
       } else {
         console.error("Failed to delete image", response.statusText);
       }
@@ -173,23 +159,40 @@ const HomeBanners = () => {
                 coloredShadow="info"
               >
                 <MDTypography variant="h6" color="white">
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={9}>
-                      <h2>Home Banners</h2>
-                    </Grid>
-                  </Grid>
+                  Home Banners
                 </MDTypography>
               </MDBox>
               <MDBox pt={3} px={2}>
+                {/* Form Fields */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {/* File Upload */}
                   <TextField
-                    name="thumbnail"
                     type="file"
                     accept="image/*"
                     style={inputStyle}
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{ accept: "image/*", multiple: true }} // Enable multiple file selection
+                    inputProps={{ accept: "image/*", multiple: true }}
                     onChange={handleFileChange}
+                  />
+                  {/* Type */}
+                  <Select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    variant="outlined"
+                    style={inputStyle}
+                  >
+                    <MenuItem value="stype" disabled style={{ lineHeight: "25px" }}>
+                      Select Type
+                    </MenuItem>
+                    <MenuItem value="external">External</MenuItem>
+                    <MenuItem value="internal">Internal</MenuItem>
+                  </Select>
+                  {/* URL */}
+                  <TextField
+                    label="URL"
+                    variant="outlined"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    style={inputStyle}
                   />
                   <Button
                     variant="contained"
@@ -204,11 +207,12 @@ const HomeBanners = () => {
                     )}
                   </Button>
                 </div>
-                {/* Uploaded images list */}
+
+                {/* Uploaded Images */}
                 <div style={{ marginTop: "20px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
                     {images.length > 0 ? (
-                      images.map((url, index) => (
+                      images.map((item, index) => (
                         <Card
                           key={index}
                           style={{ width: "200px", position: "relative", marginBottom: "20px" }}
@@ -216,19 +220,23 @@ const HomeBanners = () => {
                           <CardMedia
                             component="img"
                             height="140"
-                            image={url} // Use the image URL
-                            alt={`Image ${index + 1}`}
+                            image={item.imageUrl} // Use the image URL
                           />
                           <CardActions style={{ justifyContent: "center" }}>
                             <Button
                               variant="contained"
                               color="error"
-                              onClick={() => handleDeleteImage(url)}
+                              onClick={() => handleDeleteImage(item.url)}
                               disabled={loading}
                             >
                               Delete
                             </Button>
                           </CardActions>
+                          <div style={{ padding: "8px", textAlign: "center" }}>
+                            <strong>Type:</strong> {item.type}
+                            <br />
+                            <strong>URL:</strong> {item.url}
+                          </div>
                         </Card>
                       ))
                     ) : (
