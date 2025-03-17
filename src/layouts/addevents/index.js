@@ -626,7 +626,7 @@ const AddEvents = () => {
                         displayEmpty
                         multiple
                         renderValue={(selected) =>
-                          selected?.length ? selected?.join(",") : "Select Music Type"
+                          selected?.length ? selected?.join(", ") : "Select Music Type"
                         }
                       >
                         <MenuItem value="" disabled>
@@ -668,7 +668,7 @@ const AddEvents = () => {
                         displayEmpty
                         multiple
                         renderValue={(selected) =>
-                          selected?.length ? selected?.join(",") : "Select Language"
+                          selected?.length ? selected?.join(", ") : "Select Language"
                         }
                       >
                         <MenuItem value="" disabled>
@@ -706,6 +706,7 @@ const AddEvents = () => {
                       />
 
                       <div className="quill-container">
+                        <p>Terms and Conditions</p>
                         <ReactQuill
                           name="tnc"
                           value={formData.tnc}
