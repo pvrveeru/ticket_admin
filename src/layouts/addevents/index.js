@@ -39,7 +39,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 const AddEvents = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const eventId = location.state?.eventId || null;
+  const [eventId, setEventId] = useState(location.state?.eventId || null);
+  // const eventId = location.state?.eventId || null;
   //const { eventId } = useParams();
   const [thumbUrl, setThumbUrl] = useState(""); // Add state for thumbUrl
   const [layoutImageUrl, setLayoutImageUrl] = useState(""); // Add state for thumbUrl
@@ -181,7 +182,8 @@ const AddEvents = () => {
       });
 
       alert("Event created successfully");
-      navigate("/events");
+      setEventId(response?.data?.data?.eventId);
+      // navigate("/events");
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event");
